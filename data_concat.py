@@ -13,4 +13,4 @@ df.reset_index(drop=True, inplace=True)  # 컬럼 번호 초기화
 print(df.head())
 print(df.tail())
 df.info()
-df.to_csv('./test_data_final.csv', index=False)
+df.to_csv('./resources/test_data_final.csv', index=False)
