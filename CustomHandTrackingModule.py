@@ -31,7 +31,8 @@ class HandDetector:
 
         self.mpHands = mp.solutions.hands
         self.hands = self.mpHands.Hands(static_image_mode=self.mode, max_num_hands=self.maxHands,
-                                        min_detection_confidence=self.detectionCon, min_tracking_confidence = self.minTrackCon)
+                                        min_detection_confidence=self.detectionCon,
+                                        min_tracking_confidence=self.minTrackCon)
         self.mpDraw = mp.solutions.drawing_utils
         self.tipIds = [4, 8, 12, 16, 20]
         self.fingers = []
@@ -40,7 +41,6 @@ class HandDetector:
     def findHands(self, img, draw=True, flipType=True):
         """
         Finds hands in a BGR image.
-        :rtype: object
         :param img: Image to find the hands in.
         :param draw: Flag to draw the output on the image.
         :return: Image with or without drawings
@@ -49,16 +49,16 @@ class HandDetector:
         self.results = self.hands.process(imgRGB)
         allHands = []
         h, w, c = img.shape
-        if  self.results.multi_hand_landmarks:
-            for handType,handLms in zip(self.results.multi_handedness,self.results.multi_hand_landmarks):
-                myHand={}
+        if self.results.multi_hand_landmarks:
+            for handType, handLms in zip(self.results.multi_handedness, self.results.multi_hand_landmarks):
+                myHand = {}
                 ## lmList
                 mylmList = []
                 xList = []
                 yList = []
                 for id, lm in enumerate(handLms.landmark):
-                    px, py = int(lm.x * w), int(lm.y * h)
-                    mylmList.append([px, py])
+                    px, py, pz = int(lm.x * w), int(lm.y * h), int(lm.z * w)
+                    mylmList.append([px, py, pz])
                     xList.append(px)
                     yList.append(py)
 
@@ -72,14 +72,15 @@ class HandDetector:
 
                 myHand["lmList"] = mylmList
                 myHand["bbox"] = bbox
-                myHand["center"] =  (cx, cy)
+                myHand["center"] = (cx, cy)
 
                 if flipType:
-                    if handType.classification[0].label =="Right":
+                    if handType.classification[0].label == "Right":
                         myHand["type"] = "Left"
                     else:
                         myHand["type"] = "Right"
-                else:myHand["type"] = handType.classification[0].label
+                else:
+                    myHand["type"] = handType.classification[0].label
                 allHands.append(myHand)
 
                 ## draw
@@ -89,14 +90,14 @@ class HandDetector:
                     cv2.rectangle(img, (bbox[0] - 20, bbox[1] - 20),
                                   (bbox[0] + bbox[2] + 20, bbox[1] + bbox[3] + 20),
                                   (255, 0, 255), 2)
-                    cv2.putText(img,myHand["type"],(bbox[0] - 30, bbox[1] - 30),cv2.FONT_HERSHEY_PLAIN,
-                                2,(255, 0, 255),2)
+                    cv2.putText(img, myHand["type"], (bbox[0] - 30, bbox[1] - 30), cv2.FONT_HERSHEY_PLAIN,
+                                2, (255, 0, 255), 2)
         if draw:
-            return allHands,img
+            return allHands, img
         else:
             return allHands
 
-    def fingersUp(self,myHand):
+    def fingersUp(self, myHand):
         """
         Finds how many fingers are open and returns in a list.
         Considers left and right hands separately
@@ -105,13 +106,14 @@ class HandDetector:
         myLmList = myHand['lmList']
         if self.results.multi_hand_landmarks:
             fingers = []
-            zero_dot = [myLmList[0][0], myLmList[0][1]]
-            cor_degree = self.sol_degree(zero_dot[0], zero_dot[1], myLmList[17][0], myLmList[17][1])
+            cor_degree = self.sol_degree(myLmList[0][0], myLmList[0][1], myLmList[17][0], myLmList[17][1])
             # Thumb
             Thumb_1 = [myLmList[self.tipIds[0]][0], myLmList[self.tipIds[0]][1]]
             Thumb_2 = [myLmList[self.tipIds[0] - 1][0], myLmList[self.tipIds[0] - 1][1]]
-            Thumb_f1 = self.retouchHands((math.pi / 2) - cor_degree, zero_dot[0], zero_dot[1], Thumb_1[0], Thumb_1[1])
-            Thumb_f2 = self.retouchHands((math.pi / 2) - cor_degree, zero_dot[0], zero_dot[1], Thumb_2[0], Thumb_2[1])
+            Thumb_f1 = self.retouchHands((math.pi / 2) - cor_degree, myLmList[0][0], myLmList[0][1], Thumb_1[0],
+                                         Thumb_1[1])
+            Thumb_f2 = self.retouchHands((math.pi / 2) - cor_degree, myLmList[0][0], myLmList[0][1], Thumb_2[0],
+                                         Thumb_2[1])
             if abs(Thumb_f1[0]) > abs(Thumb_f2[0]):
                 fingers.append(1)
             else:
@@ -121,15 +123,15 @@ class HandDetector:
             for id in range(1, 5):
                 Fingers_1 = [myLmList[self.tipIds[id]][0], myLmList[self.tipIds[id]][1]]
                 Fingers_2 = [myLmList[self.tipIds[id] - 2][0], myLmList[self.tipIds[id] - 2][1]]
-                vec_t1 = ((Fingers_1[0] - zero_dot[0]) ** 2 + (Fingers_1[1] - zero_dot[1]) ** 2) ** 0.5
-                vec_t2 = ((Fingers_2[0] - zero_dot[0]) ** 2 + (Fingers_2[1] - zero_dot[1]) ** 2) ** 0.5
+                vec_t1 = ((Fingers_1[0] - myLmList[0][0]) ** 2 + (Fingers_1[1] - myLmList[0][1]) ** 2) ** 0.5
+                vec_t2 = ((Fingers_2[0] - myLmList[0][0]) ** 2 + (Fingers_2[1] - myLmList[0][1]) ** 2) ** 0.5
                 if vec_t1 > vec_t2:
                     fingers.append(1)
                 else:
                     fingers.append(0)
         return fingers
 
-    def findDistance(self,p1, p2, img=None):
+    def findDistance(self, p1, p2, img=None):
         """
         Find the distance between two landmarks based on their
         index numbers.
@@ -152,7 +154,7 @@ class HandDetector:
             cv2.circle(img, (x2, y2), 15, (255, 0, 255), cv2.FILLED)
             cv2.line(img, (x1, y1), (x2, y2), (255, 0, 255), 3)
             cv2.circle(img, (cx, cy), 15, (255, 0, 255), cv2.FILLED)
-            return length,info, img
+            return length, info, img
         else:
             return length, info
 
@@ -170,7 +172,6 @@ class HandDetector:
             if fy > zy: re = math.pi / 2
             else: re = (math.pi * 2) * 3 / 4
         return re
-
 
 def main():
     cap = cv2.VideoCapture(0)
@@ -203,7 +204,7 @@ def main():
                 fingers2 = detector.fingersUp(hand2)
 
                 # Find Distance between two Landmarks. Could be same hand or different hands
-                length, info, img = detector.findDistance(lmList1[8], lmList2[8], img)  # with draw
+                length, info, img = detector.findDistance(lmList1[8][0:2], lmList2[8][0:2], img)  # with draw
                 # length, info = detector.findDistance(lmList1[8], lmList2[8])  # with draw
         # Display
         cv2.imshow("Image", img)
