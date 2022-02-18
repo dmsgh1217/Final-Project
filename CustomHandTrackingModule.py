@@ -38,7 +38,7 @@ class HandDetector:
         self.fingers = []
         self.lmList = []
 
-    def findHands(self, img, draw=True, flipType=True):
+    def loc_findHands(self, img, draw=True, flipType=True):
         """
         Finds hands in a BGR image.
         :param img: Image to find the hands in.
@@ -96,6 +96,43 @@ class HandDetector:
             return allHands, img
         else:
             return allHands
+
+    def nom_findHands(self, img, flipType=True):
+        """
+        Finds hands in a BGR image.
+        :param img: Image to find the hands in.
+        :param draw: Flag to draw the output on the image.
+        :return: Image with or without drawings
+        """
+        imgRGB = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+        self.results = self.hands.process(imgRGB)
+        allHands = []
+        h, w, c = img.shape
+        if self.results.multi_hand_landmarks:
+            for handType, handLms in zip(self.results.multi_handedness, self.results.multi_hand_landmarks):
+                myHand = {}
+                ## lmList
+                mylmList = []
+                xList = []
+                yList = []
+                for id, lm in enumerate(handLms.landmark):
+                    px, py, pz = lm.x, lm.y, lm.z
+                    mylmList.append([px, py, pz])
+                    xList.append(px)
+                    yList.append(py)
+
+                myHand["lmList"] = mylmList
+
+                if flipType:
+                    if handType.classification[0].label == "Right":
+                        myHand["type"] = "Left"
+                    else:
+                        myHand["type"] = "Right"
+                else:
+                    myHand["type"] = handType.classification[0].label
+                allHands.append(myHand)
+
+        return allHands
 
     def fingersUp(self, myHand):
         """

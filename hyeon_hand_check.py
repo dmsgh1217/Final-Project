@@ -1,11 +1,11 @@
 from cvzone.HandTrackingModule import HandDetector
 import pandas as pd
-import cv2, time, glob
+import cv2, glob
 
 res = glob.glob('./resources/*.mp4')
-cat = ['rock', 'scissor']
+# cat = ['rock', 'scissors', 'paper']
 
-detector = HandDetector(detectionCon=0.8, maxHands=1)
+detector = HandDetector(detectionCon=0.95, maxHands=1)
 x0, x1, x2, x3, x4, x5, x6, x7, x8, x9 = [], [], [], [], [], [], [], [], [], []
 x10, x11, x12, x13, x14, x15, x16, x17, x18, x19, x20 = [], [], [], [], [], [], [], [], [], [], []
 y0, y1, y2, y3, y4, y5, y6, y7, y8, y9 = [], [], [], [], [], [], [], [], [], []
@@ -18,15 +18,18 @@ x, y = [], [],
 # z = []
 category = []
 
-for i in range(len(cat)):  # 영상 파일 불러오기
-    cap = cv2.VideoCapture(res[i])
+for i in res:  # 영상 파일 불러오기
+    cap = cv2.VideoCapture(i)
+    if 'rock' in i: temp_cat = 'rock'  # 카테고리 지정
+    elif 'scissors' in i: temp_cat = 'scissors'
+    else: temp_cat = 'paper'
     width = cap.get(cv2.CAP_PROP_FRAME_WIDTH)  # 영상의 프레임 폭을 획득한다.
     height = cap.get(cv2.CAP_PROP_FRAME_HEIGHT)  # 영상의 프레임 높이를 획득한다.
 
     while cap.isOpened():
         sucess, img = cap.read()
         if not sucess:  # 비디오가 끝났을때 while문을 빠져나가도록 설계
-            print('video is over')
+            print('{} video is over'.format(temp_cat))
             break
 
         img = cv2.flip(img, 1)  # 좌우반전
@@ -34,15 +37,16 @@ for i in range(len(cat)):  # 영상 파일 불러오기
 
         if hands:  # 손이 감지될 때만 코드 활성화
             lmList = hands[0]['lmList']  # 손의 각 점좌표 할당
-            if len(lmList) == 21:  # 손좌표가 21개일때만 좌표를 받아들일 수 있도록 설정
-                for j in range(0, len(total), 2):
-                    nom_x = lmList[j//2][0] / width  # x좌표 표준화
-                    nom_y = lmList[j//2][1] / height # y좌표 표준화
-                    # total[j].append(lmList[j//2][0])  # x좌표 입력
-                    # total[j+1].append(lmList[j//2][1])  # y좌표 입력
-                    total[j].append(nom_x)  # 표준화 x좌표 입력
-                    total[j + 1].append(nom_y)  # 표준화 y좌표 입력
-                category.append(cat[i])  # 카테고리명 지정
+            for j in range(0, len(total), 2):
+                if lmList[j//2][0] > width: lmList[j//2][0] = width  # x값이 비디오 해상도보다 크다면 해상도 크기로 강제 고정
+                if lmList[j//2][1] > height: lmList[j//2][1] = height  # y값이 비디오 해상도보다 크다면 해상도 크기로 강제 고정
+                nom_x = lmList[j//2][0] / width  # x좌표 표준화
+                nom_y = lmList[j//2][1] / height # y좌표 표준화
+                total[j].append(nom_x)  # 표준화 x좌표 입력
+                total[j + 1].append(nom_y)  # 표준화 y좌표 입력
+                # total[j].append(lmList[j // 2][0])  # x좌표 입력
+                # total[j + 1].append(lmList[j // 2][1])  # y좌표 입력
+            category.append(temp_cat)  # 카테고리명 지정
 
         cv2.imshow('input video', img)  # 이미지 출력
         cv2.waitKey(1)
@@ -57,4 +61,5 @@ hand_data = pd.DataFrame({'x0':x0, 'y0':y0, 'x1':x1, 'y1':y1, 'x2':x2, 'y2':y2, 
 print(hand_data.head())
 hand_data.info()
 # 데이터 프레임을 저장한다.
-hand_data.to_csv('./resources/rock_scissor_nomallize_data.csv', index=False)
+hand_data.to_csv('./resources/rock_scissor_paper_nomallize_data_w_{}_h_{}.csv'.format(int(width), int(height)), index=False)  # 좌표 표준화 데이터 저장할때
+# hand_data.to_csv('./resources/rock_scissor_paper_data.csv', index=False)  # 좌표 데이터 저장할때
