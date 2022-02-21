@@ -6,14 +6,14 @@ from tensorflow.keras.utils import to_categorical
 import pickle, math
 
 # 사용자 지정 리소스
-__loc = True
-__ratio = False
+__loc = False
+__ratio = True
 __angle = False
 ratio_norm = 2.5
 angle_norm = 360
 encoder_folder_location = 'resources/'
 npy_folder_location = 'resources/'
-df = pd.read_csv('./파일 위치')
+df = pd.read_csv('./resources/landmark_position_normalize_w1280_h720.csv')
 
 # 본 코드
 result_ang_df = pd.DataFrame()
@@ -66,8 +66,8 @@ def start_create_ratio_df(normalization=2.5):  # 비율에 대한 DataFrame 생�
         ratio_4.append(sol_ratio(X['x20'][i], X['y20'][i], X['x17'][i], X['y17'][i], X['x0'][i], X['y0'][i])) #새끼손가락
 
         # 중간 진행상황 체크를 위한 코드 "...."
-        if i % 100: print('.', end='')
-        if i % 1000: print('')
+        if i % 100 == 0: print('.', end='')
+        if i % 2000 == 0: print('')
 
     # DataFrame 생성
     for i in range(len(total)):
@@ -105,14 +105,14 @@ def start_create_angle_df(normalization=360):  # 각도에 대한 DataFrame 생�
             else:  # 그 외
                 for j in range(count):
                     # total list의 0, 1번의 엄지 index 제외한 손가락 각도 계산 필요하므로 1 + 필요
-                    total[1 + i * count + j].append(
+                    total[2 + (i - 1) * count + j].append(
                         getAngle3P([X[f'x{fingers[i][j]}'][k], X[f'y{fingers[i][j]}'][k]],
                                    [X[f'x{fingers[i][j + 1]}'][k], X[f'y{fingers[i][j + 1]}'][k]],
                                    [X[f'x{fingers[i][j + 2]}'][k], X[f'y{fingers[i][j + 2]}'][k]]))
 
         # 중간 진행 상황 체크 "..." 프린트
-        if i % 100: print('.', end='')
-        if i % 1000: print('')
+        if k % 100 == 0: print('.', end='')
+        if k % 2000 == 0: print('')
 
     total_name = ['ang_0_0', 'ang_0_1', 'ang_1_0', 'ang_1_1', 'ang_1_2', 'ang_2_0', 'ang_2_1', 'ang_2_2', 'ang_3_0',
                   'ang_3_1', 'ang_3_2', 'ang_4_0', 'ang_4_1', 'ang_4_2']
