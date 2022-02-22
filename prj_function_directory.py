@@ -1,6 +1,6 @@
 import numpy as np
 
-def reference_location(x, y):
+def reference_loc(x, y):
     x3 = (x[5] + x[17] + x[0]) / 3
     y3 = (y[5] + y[17] + y[0]) / 3
     return [x3, y3]
