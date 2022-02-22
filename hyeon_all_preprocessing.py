@@ -3,12 +3,13 @@ import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
 from tensorflow.keras.utils import to_categorical
+from prj_function_directory import sol_ratio, getAngle3P
 import pickle, math
 
 # 사용자 지정 리소스
-__loc = False
+__loc = True
 __ratio = True
-__angle = False
+__angle = True
 ratio_norm = 2.5
 angle_norm = 360
 encoder_folder_location = 'resources/'
@@ -26,29 +27,6 @@ Y = df['category']  # 카테고리 y값으로 추출
 X = df.loc[:, df.columns != 'category']  # 카테고리를 제외한 X값 추출
 
 # 함수
-def sol_length(x1, y1, x2, y2):  # solution_length, 두 점사이의 길이
-  return ((x1 - x2)**2 + (y1 - y2)**2)**0.5
-
-def sol_ratio(x1, y1, x2, y2, x3, y3):  # solution_ratio
-  len_a = sol_length(x1, y1, x3, y3)
-  len_b = sol_length(x2, y2, x3, y3)
-  return len_a / len_b
-
-def __angle_between(p1, p2):  # 두점 사이의 각도:(getAngle3P 계산용) 시계 방향으로 계산한다. P1-(0,0)-P2의 각도를 시계방향으로
-    ang1 = np.arctan2(*p1[::-1])
-    ang2 = np.arctan2(*p2[::-1])
-    res = np.rad2deg((ang1 - ang2) % (2 * np.pi))  # radius 값 -> degree 로 바꾼 값에 2파이로 나눈 나머지를 구함 // 360도 넘어가지 않도록 설정
-    return res
-
-def getAngle3P(p1, p2, p3, direction="CW"):  # 세점 사이의 각도 1->2->3, CW = 시계 방향
-    pt1 = (p1[0] - p2[0], p1[1] - p2[1])
-    pt2 = (p3[0] - p2[0], p3[1] - p2[1])  # p2 좌표를 0,0으로 재설정
-    res = __angle_between(pt1, pt2)
-    res = (res + 360) % 360
-    if direction == "CCW":  # 반시계 방향
-        res = (360 - res) % 360
-    return res
-
 def start_create_ratio_df(normalization=2.5):  # 비율에 대한 DataFrame 생성 함수, 손바닥 끝~손가락 가장 끝마디/손바닥 끝~손가락 가장 안쪽마디 = 2.5 배
     global result_ratio_df
 
