@@ -7,8 +7,8 @@ from prj_function_directory import sol_ratio, getAngle3P
 import pickle, math
 
 # 사용자 지정 리소스
-__loc = True
-__ratio = True
+__loc = False
+__ratio = False
 __angle = True
 ratio_norm = 2.5
 angle_norm = 360
@@ -17,31 +17,35 @@ npy_folder_location = 'resources/'
 df = pd.read_csv('./resources/landmark_position_normalize_w1280_h720.csv')
 
 # 본 코드
-result_ang_df = pd.DataFrame()
-result_ratio_df = pd.DataFrame()
+result_ang_df = pd.DataFrame()  # 각도 데이터 프레임
+result_ratio_df = pd.DataFrame()  # 비율 데이터 프레임
 
 # print(df.head())
 # df.info()
 
+# 결측치 처리
+df.dropna(inplace=True)  # Nan 값 제거
+df.reset_index(drop=True, inplace=True)  # 인덱스 초기화
+
+# 카데고리 분리
 Y = df['category']  # 카테고리 y값으로 추출
 X = df.loc[:, df.columns != 'category']  # 카테고리를 제외한 X값 추출
 
-# 함수
-def start_create_ratio_df(normalization=2.5):  # 비율에 대한 DataFrame 생성 함수, 손바닥 끝~손가락 가장 끝마디/손바닥 끝~손가락 가장 안쪽마디 = 2.5 배
+# 비율에 대한 DataFrame 생성 함수, 손바닥 끝~손가락 가장 끝마디/손바닥 끝~손가락 가장 안쪽마디 = 2.5 배
+def start_create_ratio_df(normalization=2.5):
     global result_ratio_df
 
     print('start_ratio_calc')
     ratio_0, ratio_1, ratio_2, ratio_3, ratio_4 = [], [], [], [], []
-
     total = [ratio_0, ratio_1, ratio_2, ratio_3, ratio_4]
     total_name = ['ratio_0', 'ratio_1', 'ratio_2', 'ratio_3', 'ratio_4']
+    fingers = [[4, 5, 17], [8, 5, 0], [12, 9, 0], [16, 13, 0], [20, 17, 0]]  # 엄지~새끼손가락 순
 
     for i in range(len(X)):  # 엄지 / 검지~새끼손가락 비율 산출을 위한 포인트는 각각 다름
-        ratio_0.append(sol_ratio(X['x4'][i], X['y4'][i], X['x5'][i], X['y5'][i], X['x17'][i], X['y17'][i])) #엄지
-        ratio_1.append(sol_ratio(X['x8'][i], X['y8'][i], X['x5'][i], X['y5'][i], X['x0'][i], X['y0'][i])) #검지
-        ratio_2.append(sol_ratio(X['x12'][i], X['y12'][i], X['x9'][i], X['y9'][i], X['x0'][i], X['y0'][i])) #중지
-        ratio_3.append(sol_ratio(X['x16'][i], X['y16'][i], X['x13'][i], X['y13'][i], X['x0'][i], X['y0'][i])) #약지
-        ratio_4.append(sol_ratio(X['x20'][i], X['y20'][i], X['x17'][i], X['y17'][i], X['x0'][i], X['y0'][i])) #새끼손가락
+        for j in range(len(total)):
+            total[j].append(sol_ratio(X[f'x{fingers[j][0]}'][i], X[f'y{fingers[j][0]}'][i],
+                                      X[f'x{fingers[j][1]}'][i], X[f'y{fingers[j][1]}'][i],
+                                      X[f'x{fingers[j][2]}'][i], X[f'y{fingers[j][2]}'][i]))
 
         # 중간 진행상황 체크를 위한 코드 "...."
         if i % 100 == 0: print('.', end='')
@@ -57,7 +61,8 @@ def start_create_ratio_df(normalization=2.5):  # 비율에 대한 DataFrame 생�
     # print(result_ratio_df.head())
     result_ratio_df.info()
 
-def start_create_angle_df(normalization=360):  # 각도에 대한 DataFrame 생성 함수
+# 각도에 대한 DataFrame 생성 함수
+def start_create_angle_df(normalization=360):
     global result_ang_df
 
     print('start_angle_calc')
@@ -67,33 +72,24 @@ def start_create_angle_df(normalization=360):  # 각도에 대한 DataFrame 생�
     ang_0_0, ang_0_1, ang_1_0, ang_1_1, ang_1_2, ang_2_0, ang_2_1, ang_2_2, ang_3_0, ang_3_1, ang_3_2, ang_4_0, ang_4_1, ang_4_2 = [], [], [], [], [], [], [], [], [], [], [], [], [], []
     total = [ang_0_0, ang_0_1, ang_1_0, ang_1_1, ang_1_2, ang_2_0, ang_2_1, ang_2_2, ang_3_0, ang_3_1, ang_3_2, ang_4_0,
              ang_4_1, ang_4_2]
+    total_name = ['ang_0_0', 'ang_0_1', 'ang_1_0', 'ang_1_1', 'ang_1_2', 'ang_2_0', 'ang_2_1', 'ang_2_2', 'ang_3_0',
+                  'ang_3_1', 'ang_3_2', 'ang_4_0', 'ang_4_1', 'ang_4_2']
 
     for k in range(len(X)):
         for i in range(5):  # 손가락 개수 (엄지~새끼손가락 순)
-            count = len(fingers[i]) - 2 # 한 리스트에서 세 점을 순차적으로 추출해서 계산 ex) 엄지 = [4,3,2], [3,2,1]
-            if i == 0:  # 엄지
-                # ang_0_0
-                total[0].append(getAngle3P([X[f'x{fingers[0][0]}'][k], X[f'y{fingers[0][0]}'][k]],
-                                           [X[f'x{fingers[0][1]}'][k], X[f'y{fingers[0][1]}'][k]],
-                                           [X[f'x{fingers[0][2]}'][k], X[f'y{fingers[0][2]}'][k]]))
-                # ang_0_1
-                total[1].append(getAngle3P([X[f'x{fingers[0][1]}'][k], X[f'y{fingers[0][1]}'][k]],
-                                           [X[f'x{fingers[0][2]}'][k], X[f'y{fingers[0][2]}'][k]],
-                                           [X[f'x{fingers[0][3]}'][k], X[f'y{fingers[0][3]}'][k]]))
-            else:  # 그 외
-                for j in range(count):
-                    # total list의 0, 1번의 엄지 index 제외한 손가락 각도 계산 필요하므로 1 + 필요
-                    total[2 + (i - 1) * count + j].append(
-                        getAngle3P([X[f'x{fingers[i][j]}'][k], X[f'y{fingers[i][j]}'][k]],
-                                   [X[f'x{fingers[i][j + 1]}'][k], X[f'y{fingers[i][j + 1]}'][k]],
-                                   [X[f'x{fingers[i][j + 2]}'][k], X[f'y{fingers[i][j + 2]}'][k]]))
+            count = len(fingers[i]) - 2  # 한 리스트에서 세 점을 순차적으로 추출해서 계산 ex) 엄지 = [4,3,2], [3,2,1]
+            _step = 2 + (i - 1) * count
+            if i == 0: _step = 0  # 엄지손가락이라면 _step을 0으로 한다.
+            for j in range(count):
+                # total list의 0, 1번의 엄지 index 제외한 손가락 각도 계산 필요하므로 1 + 필요
+                total[_step + j].append(
+                    getAngle3P([X[f'x{fingers[i][j]}'][k], X[f'y{fingers[i][j]}'][k]],
+                               [X[f'x{fingers[i][j + 1]}'][k], X[f'y{fingers[i][j + 1]}'][k]],
+                               [X[f'x{fingers[i][j + 2]}'][k], X[f'y{fingers[i][j + 2]}'][k]]))
 
         # 중간 진행 상황 체크 "..." 프린트
         if k % 100 == 0: print('.', end='')
         if k % 2000 == 0: print('')
-
-    total_name = ['ang_0_0', 'ang_0_1', 'ang_1_0', 'ang_1_1', 'ang_1_2', 'ang_2_0', 'ang_2_1', 'ang_2_2', 'ang_3_0',
-                  'ang_3_1', 'ang_3_2', 'ang_4_0', 'ang_4_1', 'ang_4_2']
 
     # DataFrame 생성
     for i in range(len(total)):
@@ -142,8 +138,7 @@ print(X_test.shape, Y_test.shape)
 
 xy = X_train, X_test, Y_train, Y_test
 
-#데이터 저장
-
+# 데이터 저장
 if [__loc, __ratio, __angle] == [True, True, True]:
     np.save('./{}encoder_complex_data'.format(npy_folder_location), xy)
 
