@@ -1,3 +1,6 @@
+# 생성된 데이터를 원하는 데이터로 가공해서 전처리 하는 프로세스 입니다.
+# Release 1.5 ver by hyeon-sam
+
 import numpy as np
 import pandas as pd
 from sklearn.model_selection import train_test_split
