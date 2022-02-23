@@ -7,11 +7,11 @@ from prj_function_directory import sol_ratio, getAngle3P
 import pickle, math
 
 # 사용자 지정 리소스
-__loc = False
-__ratio = False
-__angle = True
-ratio_norm = 2.5
-angle_norm = 360
+__loc = False  # 좌표데이터 활용시 True
+__ratio = True  # 비율데이터 활용시 True
+__angle = False  # 각도데이터 활용시 True
+ratio_norm = 2.5  # 비율 표준화 수치
+angle_norm = 360  # 각도 표준화 수치
 encoder_folder_location = 'resources/'
 npy_folder_location = 'resources/'
 df = pd.read_csv('./resources/landmark_position_normalize_w1280_h720.csv')
@@ -30,6 +30,18 @@ df.reset_index(drop=True, inplace=True)  # 인덱스 초기화
 # 카데고리 분리
 Y = df['category']  # 카테고리 y값으로 추출
 X = df.loc[:, df.columns != 'category']  # 카테고리를 제외한 X값 추출
+
+# 데이터 프레임 생성 함수
+def create_df(param, total, total_name, norm):
+    # DataFrame 생성
+    for i in range(len(total)):
+        param[total_name[i]] = total[i]
+
+    # 만든 DataFrame에 정규화를 위해 설정값으로 나눠줌
+    param = param / norm
+
+    # print(param.head())
+    return param
 
 # 비율에 대한 DataFrame 생성 함수, 손바닥 끝~손가락 가장 끝마디/손바닥 끝~손가락 가장 안쪽마디 = 2.5 배
 def start_create_ratio_df(normalization=2.5):
@@ -51,14 +63,8 @@ def start_create_ratio_df(normalization=2.5):
         if i % 100 == 0: print('.', end='')
         if i % 2000 == 0: print('')
 
-    # DataFrame 생성
-    for i in range(len(total)):
-        result_ratio_df[total_name[i]] = total[i]
+    result_ratio_df = create_df(result_ratio_df, total, total_name, normalization)
 
-    # 만든 DataFrame에 정규화를 위해 설정값으로 나눠줌
-    result_ratio_df = result_ratio_df / normalization
-
-    # print(result_ratio_df.head())
     result_ratio_df.info()
 
 # 각도에 대한 DataFrame 생성 함수
@@ -91,12 +97,8 @@ def start_create_angle_df(normalization=360):
         if k % 100 == 0: print('.', end='')
         if k % 2000 == 0: print('')
 
-    # DataFrame 생성
-    for i in range(len(total)):
-        result_ang_df[total_name[i]] = total[i]
+    result_ang_df = create_df(result_ang_df, total, total_name, normalization)
 
-    # 만든 DataFrame 정규화
-    result_ang_df = result_ang_df / normalization
     result_ang_df.info()
 
 # 최종 사용할 DataFrame
