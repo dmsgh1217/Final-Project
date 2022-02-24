@@ -57,7 +57,8 @@ class HandDetector:
                 xList = []
                 yList = []
                 for id, lm in enumerate(handLms.landmark):
-                    px, py, pz = int(lm.x * w), int(lm.y * h), int(lm.z * w)
+                    if normalization: px, py, pz = lm.x, lm.y, lm.z
+                    else: px, py, pz = int(lm.x * w), int(lm.y * h), int(lm.z * w)
                     mylmList.append([px, py, pz])
                     xList.append(px)
                     yList.append(py)
@@ -93,7 +94,7 @@ class HandDetector:
                                   (255, 0, 255), 2)
                     cv2.putText(img, myHand["type"], (bbox[0] - 30, bbox[1] - 30), cv2.FONT_HERSHEY_PLAIN,
                                 2, (255, 0, 255), 2)
-        if draw:
+        if draw and not normalization:
             return allHands, img
         else:
             return allHands
