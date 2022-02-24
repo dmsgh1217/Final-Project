@@ -1,12 +1,12 @@
 # 생성된 데이터를 원하는 데이터로 가공해서 전처리 하는 프로세스 입니다.
-# Release 1.6 ver by Hyeon-sam, Ji-young
+# Release 1.7 ver by Hyeon-sam, Ji-young
 
 import numpy as np
 import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
 from tensorflow.keras.utils import to_categorical
-from prj_function_directory import sol_ratio, getAngle3P, df_concat
+from prj_function_directory import sol_ratio, getAngle3P, df_concat, split_evenly_df
 import pickle, math
 
 # 사용자 지정 리소스
@@ -17,11 +17,10 @@ ratio_norm = 2.5  # 비율 표준화 수치
 angle_norm = 360  # 각도 표준화 수치
 encoder_folder_location = 'resources/'
 npy_folder_location = 'resources/'
-
-# 본 코드
-df = df_concat(path='./raw_data', ref=True)  # 데이터 프레임 통합 함수
+df = split_evenly_df(path='./raw_data', ref=True)  # 데이터 프레임 통합 및 균일화 함수
 # df = pd.read_csv('./resources/rock_scissor_paper_nomallize_data_w_640_h_480.csv')
 
+# 본 코드
 result_ang_df = pd.DataFrame()  # 각도 데이터 프레임
 result_ratio_df = pd.DataFrame()  # 비율 데이터 프레임
 
