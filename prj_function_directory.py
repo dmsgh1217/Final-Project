@@ -61,6 +61,8 @@ def convert_angle(x, y, normalization=360):  # 각도에 대한 DataFrame 생성
 def df_concat(**kwargs):
     path = kwargs['path'] if 'path' in kwargs else './rawdata'
     name = kwargs['name'] if 'name' in kwargs else 'integration'
+    # 다른 함수에서 데이터 프레임 자체를 리턴받고 싶은 경우, "True"를 인자값으로 전달하면 됩니다.
+    ref = kwargs['ref'] if 'ref' in kwargs else False
 
     # 지정한 디렉토리에서 .csv 확장자를 가진 파일만 가져옵니다.
     df_list = glob.glob(f'{path}/*.csv')
@@ -79,3 +81,6 @@ def df_concat(**kwargs):
     # 통합본(integration.csv)을 "rawdata"디렉토리에 저장합니다.
     name = ''.join([name, f'_col{len(df)}.csv'])
     df.to_csv(f'{path}/{name}', index=False)
+
+    if ref:
+        return df

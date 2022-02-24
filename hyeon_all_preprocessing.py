@@ -1,25 +1,27 @@
 # 생성된 데이터를 원하는 데이터로 가공해서 전처리 하는 프로세스 입니다.
-# Release 1.5 ver by hyeon-sam, Ji-young
+# Release 1.6 ver by Hyeon-sam, Ji-young
 
 import numpy as np
 import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
 from tensorflow.keras.utils import to_categorical
-from prj_function_directory import sol_ratio, getAngle3P
+from prj_function_directory import sol_ratio, getAngle3P, df_concat
 import pickle, math
 
 # 사용자 지정 리소스
-__loc = False  # 좌표데이터 활용시 True
-__ratio = True  # 비율데이터 활용시 True
+__loc = True  # 좌표데이터 활용시 True
+__ratio = False  # 비율데이터 활용시 True
 __angle = False  # 각도데이터 활용시 True
 ratio_norm = 2.5  # 비율 표준화 수치
 angle_norm = 360  # 각도 표준화 수치
 encoder_folder_location = 'resources/'
 npy_folder_location = 'resources/'
-df = pd.read_csv('./resources/landmark_position_normalize_w1280_h720.csv')
 
 # 본 코드
+df = df_concat(path='./raw_data', ref=True)  # 데이터 프레임 통합 함수
+# df = pd.read_csv('./resources/rock_scissor_paper_nomallize_data_w_640_h_480.csv')
+
 result_ang_df = pd.DataFrame()  # 각도 데이터 프레임
 result_ratio_df = pd.DataFrame()  # 비율 데이터 프레임
 
@@ -33,6 +35,10 @@ df.reset_index(drop=True, inplace=True)  # 인덱스 초기화
 # 카데고리 분리
 Y = df['category']  # 카테고리 y값으로 추출
 X = df.loc[:, df.columns != 'category']  # 카테고리를 제외한 X값 추출
+
+# 컬럼개수 세는 코드
+total_col_vol = 0
+volume_loc = len(X.columns)  # 좌표데이터의 컬럼수를 가져온다.
 
 # 데이터 프레임 생성 함수
 def create_df(param, total, total_name, norm):
@@ -110,16 +116,19 @@ name = ''
 
 if __loc == True:
     name = name + '_loc'
+    total_col_vol += volume_loc
     final_use_df = pd.concat([final_use_df, X], axis=1)  # 좌표데이터 통합
 
 if __ratio == True:
     name = name + '_ratio'
     start_create_ratio_df(normalization=ratio_norm)
+    total_col_vol += len(result_ratio_df.columns)
     final_use_df = pd.concat([final_use_df, result_ratio_df], axis=1)  # 비율데이터 통합
 
 if __angle == True:
     name = name + '_angle'
     start_create_angle_df(normalization=angle_norm)
+    total_col_vol += len(result_ang_df.columns)
     final_use_df = pd.concat([final_use_df, result_ang_df], axis=1)  # 각도데이터 통합
 
 final_use_df.info()
@@ -140,17 +149,18 @@ print(onehot_Y.shape)
 X_train, X_test, Y_train, Y_test = train_test_split(final_use_df, onehot_Y, test_size=0.1)  # 테스트 데이터 분리, test_size = 0.1으로 고정
 print(X_train.shape, Y_train.shape)
 print(X_test.shape, Y_test.shape)
+print(total_col_vol)
 
 xy = X_train, X_test, Y_train, Y_test
 
 # 데이터 저장
 if [__loc, __ratio, __angle] == [True, True, True]:
-    np.save('./{}encoder_complex_data'.format(npy_folder_location), xy)
+    np.save('./{}encoder_complex_data_d{}'.format(npy_folder_location, total_col_vol), xy)
 
-    with open('./{}encoder_complex_data_lbl.pickle'.format(encoder_folder_location), 'wb') as f:
+    with open('./{}encoder_complex_data_lbl_d{}.pickle'.format(encoder_folder_location, total_col_vol), 'wb') as f:
         pickle.dump(encoder, f)
 else:
-    np.save('./{}encoder{}_data'.format(npy_folder_location, name), xy)
+    np.save('./{}encoder{}_data_d{}'.format(npy_folder_location, name, total_col_vol), xy)
 
-    with open('./{}encoder{}_data_lbl.pickle'.format(encoder_folder_location, name), 'wb') as f:
+    with open('./{}encoder{}_data_lbl_d{}.pickle'.format(encoder_folder_location, name, total_col_vol), 'wb') as f:
         pickle.dump(encoder, f)
