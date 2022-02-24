@@ -1,4 +1,7 @@
+import glob
 import numpy as np
+import pandas as pd
+
 
 def reference_loc(x, y):
     x3 = (x[5] + x[17] + x[0]) / 3
@@ -53,3 +56,26 @@ def convert_angle(x, y, normalization=360):  # 각도에 대한 DataFrame 생성
 
     return result
 
+
+# 여러 개의 데이터프레임(.csv)을 한 개의 통합 데이터프레임으로 생성하는 함수입니다.
+def df_concat(**kwargs):
+    path = kwargs['path'] if 'path' in kwargs else './rawdata'
+    name = kwargs['name'] if 'name' in kwargs else 'integration'
+
+    # 지정한 디렉토리에서 .csv 확장자를 가진 파일만 가져옵니다.
+    df_list = glob.glob(f'{path}/*.csv')
+
+    # 통합본(integration.csv)을 생성하기 위한 데이터프레임을 생성합니다.
+    df = pd.DataFrame()
+
+    # "df_list"등록된 파일의 갯수만큼 반복합니다.
+    for filename in df_list:
+        # 통합본(integration.csv)이 이미 생성되어 있는 경우, 데이터프레임 통합에서 제외합니다.
+        if 'integration' not in filename:
+            # 데이터프레임을 불러옵니다.
+            read_df = pd.read_csv(filename, index_col=False)
+            # 기존에 구성된 데이터프레임(df)과 새로 불러온 데이터프레임(read_df)을 통합합니다.
+            df = pd.concat([df, read_df], ignore_index=True)
+    # 통합본(integration.csv)을 "rawdata"디렉토리에 저장합니다.
+    name = ''.join([name, f'_col{len(df)}.csv'])
+    df.to_csv(f'{path}/{name}', index=False)
