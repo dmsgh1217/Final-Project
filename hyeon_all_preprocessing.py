@@ -6,8 +6,8 @@ import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
 from tensorflow.keras.utils import to_categorical
-from prj_function_directory import sol_ratio, getAngle3P, df_concat, split_evenly_df
-import pickle, math
+import prj_function_directory as pfd
+import pickle
 
 # 사용자 지정 리소스
 __loc = True  # 좌표데이터 활용시 True
@@ -17,7 +17,7 @@ ratio_norm = 2.5  # 비율 표준화 수치
 angle_norm = 360  # 각도 표준화 수치
 encoder_folder_location = 'resources/'
 npy_folder_location = 'resources/'
-df = split_evenly_df(path='./raw_data', ref=True)  # 데이터 프레임 통합 및 균일화 함수
+df = pfd.split_evenly_df(path='./raw_data', ref=True)  # 데이터 프레임 통합 및 균일화 함수
 # df = pd.read_csv('./resources/rock_scissor_paper_nomallize_data_w_640_h_480.csv')
 
 # 본 코드
@@ -63,7 +63,7 @@ def start_create_ratio_df(normalization=2.5):
 
     for i in range(len(X)):  # 엄지 / 검지~새끼손가락 비율 산출을 위한 포인트는 각각 다름
         for j in range(len(total)):
-            total[j].append(sol_ratio(X[f'x{fingers[j][0]}'][i], X[f'y{fingers[j][0]}'][i],
+            total[j].append(pfd.sol_ratio(X[f'x{fingers[j][0]}'][i], X[f'y{fingers[j][0]}'][i],
                                       X[f'x{fingers[j][1]}'][i], X[f'y{fingers[j][1]}'][i],
                                       X[f'x{fingers[j][2]}'][i], X[f'y{fingers[j][2]}'][i]))
 
@@ -97,7 +97,7 @@ def start_create_angle_df(normalization=360):
             for j in range(count):
                 # total list의 0, 1번의 엄지 index 제외한 손가락 각도 계산 필요하므로 1 + 필요
                 total[_step + j].append(
-                    getAngle3P([X[f'x{fingers[i][j]}'][k], X[f'y{fingers[i][j]}'][k]],
+                    pfd.getAngle3P([X[f'x{fingers[i][j]}'][k], X[f'y{fingers[i][j]}'][k]],
                                [X[f'x{fingers[i][j + 1]}'][k], X[f'y{fingers[i][j + 1]}'][k]],
                                [X[f'x{fingers[i][j + 2]}'][k], X[f'y{fingers[i][j + 2]}'][k]]))
 
