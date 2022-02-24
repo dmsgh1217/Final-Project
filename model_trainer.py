@@ -1,8 +1,9 @@
 from tensorflow.keras.callbacks import ModelCheckpoint, ReduceLROnPlateau
 from tensorflow.keras.layers import Dense, Dropout
 from tensorflow.keras.models import Sequential
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
+import os
 
 
 def train_model(**kwargs):
@@ -13,9 +14,29 @@ def train_model(**kwargs):
         print(f'Malformed "model_sequence" parameter.. Set to default (1).\nError: {Err}')
 
     filename = kwargs['filename'] if 'filename' in kwargs else 'model'
-    print(type(model_name), filename)
+    # 현재 작업중인 디렉토리에 "models" 디렉토리가 없는 경우, 디렉토리를 생성합니다.
+    os.makedirs('models', exist_ok=True)
+    print(f'input_shape: {x_train[0].shape}')
     if model_sequence == 1:
-        print(f'input_shape: {x_train[0].shape}')
+        network = Sequential([Dense(256, input_shape=x_train[0].shape, activation='relu'),
+                              Dropout(0.3),
+                              Dense(128, activation='relu'),
+                              Dropout(0.2),
+                              Dense(64, activation='relu'),
+                              Dropout(0.2),
+                              Dense(32, activation='relu'),
+                              Dropout(0.1),
+                              Dense(16, activation='relu'),
+                              Dense(2, activation='softmax')])
+        network.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
+        network.summary()
+        network_history = network.fit(x_train, y_train, validation_data=(x_test, y_test), epochs=epochs,
+                                      callbacks=[ModelCheckpoint(f'./models/{filename}.h5', monitor='val_accuracy',
+                                                                 verbose=1, save_best_only=True, mode='auto'),
+                                                 ReduceLROnPlateau(monitor='val_accuracy', factor=0.5, patience=10,
+                                                                   verbose=1, mode='auto')])
+        return network, network_history
+    elif model_sequence == 2:
         network = Sequential([Dense(256, input_shape=x_train[0].shape, activation='relu'),
                               Dropout(0.3),
                               Dense(128, activation='relu'),
@@ -37,7 +58,6 @@ def train_model(**kwargs):
     else:
         print(f'There is no model corresponding to "model_sequence({model_sequence})".'
               f'Training proceeds with the basic model.')
-        print(f'input_shape: {x_train[0].shape}')
         network = Sequential([Dense(256, input_shape=x_train[0].shape, activation='relu'),
                               Dropout(0.3),
                               Dense(128, activation='relu'),
