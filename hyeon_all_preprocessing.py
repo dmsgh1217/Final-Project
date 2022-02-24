@@ -1,5 +1,5 @@
 # 생성된 데이터를 원하는 데이터로 가공해서 전처리 하는 프로세스 입니다.
-# Release 1.5 ver by Hyeon-sam, Ji-young
+# Release 1.6 ver by Hyeon-sam, Ji-young
 
 import numpy as np
 import pandas as pd
