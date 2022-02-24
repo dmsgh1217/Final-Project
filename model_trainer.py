@@ -2,7 +2,7 @@
 
 # Release 1.0 by Min-chul
 
-
+from datetime import datetime
 from tensorflow.keras.callbacks import ModelCheckpoint, ReduceLROnPlateau
 from tensorflow.keras.layers import Dense, Dropout
 from tensorflow.keras.models import Sequential
@@ -131,7 +131,7 @@ def train_model(**kwargs):
         network.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
         network.summary()
         network_history = network.fit(x_train, y_train, validation_data=(x_test, y_test), epochs=epoch,
-                                      callbacks=[ModelCheckpoint(f'./models/{filename}_seq{model_sequence}_test1.h5',
+                                      callbacks=[ModelCheckpoint(f'./models/{filename}_seq{model_sequence}.h5',
                                                                  monitor='val_accuracy', verbose=1, save_best_only=True,
                                                                  mode='auto'),
                                                  ReduceLROnPlateau(monitor='val_accuracy', factor=0.5, patience=10,
@@ -155,7 +155,7 @@ def train_model(**kwargs):
         network.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
         network.summary()
         network_history = network.fit(x_train, y_train, validation_data=(x_test, y_test), epochs=epoch,
-                                      callbacks=[ModelCheckpoint(f'./models/{filename}_seq{model_sequence}_test1.h5',
+                                      callbacks=[ModelCheckpoint(f'./models/{filename}_seq{model_sequence}.h5',
                                                                  monitor='val_accuracy', verbose=1, save_best_only=True,
                                                                  mode='auto'),
                                                  ReduceLROnPlateau(monitor='val_accuracy', factor=0.5, patience=10,
@@ -190,7 +190,8 @@ if __name__ == '__main__':
     action = ['move', 'click']
 
     # 전처리된 데이터(.npy)를 불러옵니다.
-    x_train, x_test, y_train, y_test = np.load(file='./resources/encoder_loc_data.npy', allow_pickle=True)
+    # x_train, x_test, y_train, y_test = np.load(file='./resources/encoder_loc_data.npy', allow_pickle=True)
+    x_train, x_test, y_train, y_test = np.load(file='./resources/encoder_loc_data_d42.npy', allow_pickle=True)
     print(f'x_train.shape: {x_train.shape}')
     print(f'y_train.shape: {y_train.shape}')
     print(f'x_test.shape: {x_test.shape}')
@@ -199,12 +200,14 @@ if __name__ == '__main__':
     # 인공지능 모델 함수를 호출하여 전처리된 데이터를 학습하고 결과값을 획득합니다.
     # model_sequence: 구성한 인공지능 네트워크에 번호를 부여하여 전달한 번호의 네트워크에 학습을 진행합니다.
     # filename: 저장되는 모델의 이름을 지정합니다.
-    model_name = 'test'
-    model, history = train_model(model_sequence=5, filename=model_name)
+    model_name = 'model'
+    sequence_number = 5
+    model, history = train_model(model_sequence=sequence_number, filename=model_name)
 
     # 학습 결과를 그래프로 시각화하여 표현합니다.
     plt.figure(figsize=(10, 12))
-    plt.suptitle(t=f'Learning result of "{model_name}"', fontsize=20)
+    plt.suptitle(t=f'Learning result of "{model_name}_seq{sequence_number}"'
+                   f'({datetime.now().strftime("%Y-%m-%d %H:%M:%S")})', fontsize=20)
 
     plt.subplot(2, 1, 1)
     plt.title(label=f'Accuracy', loc='left', color='blue', fontsize=15)
