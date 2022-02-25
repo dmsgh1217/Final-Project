@@ -1,5 +1,5 @@
 # 생성된 데이터를 원하는 데이터로 가공해서 전처리 하는 프로세스 입니다.
-# Release 1.7 ver by Hyeon-sam, Ji-young
+# Release 1.8 Ver by Hyeon-sam, Ji-young
 
 import numpy as np
 import pandas as pd
@@ -17,7 +17,7 @@ ratio_norm = 2.5  # 비율 표준화 수치
 angle_norm = 360  # 각도 표준화 수치
 encoder_folder_location = 'resources/'
 npy_folder_location = 'resources/'
-df = pfd.split_evenly_df(path='./raw_data', ref=True)  # 데이터 프레임 통합 및 균일화 함수
+df = pfd.split_evenly_df(ref=True)  # 데이터 프레임 통합 및 균일화 함수
 # df = pd.read_csv('./resources/rock_scissor_paper_nomallize_data_w_640_h_480.csv')
 
 # 본 코드
@@ -56,8 +56,7 @@ def start_create_ratio_df(normalization=2.5):
     global result_ratio_df
 
     print('start_ratio_calc')
-    ratio_0, ratio_1, ratio_2, ratio_3, ratio_4 = [], [], [], [], []
-    total = [ratio_0, ratio_1, ratio_2, ratio_3, ratio_4]
+    total = [[], [], [], [], []]
     total_name = ['ratio_0', 'ratio_1', 'ratio_2', 'ratio_3', 'ratio_4']
     fingers = [[4, 5, 17], [8, 5, 0], [12, 9, 0], [16, 13, 0], [20, 17, 0]]  # 엄지~새끼손가락 순
 
@@ -83,9 +82,7 @@ def start_create_angle_df(normalization=360):
     fingers = [[4, 3, 2, 1], [8, 7, 6, 5, 9], [12, 11, 10, 9, 13], [16, 15, 14, 13, 17], [20, 19, 18, 17, 0]]  # 엄지~새끼손가락 순
 
     # 엄지 = 각도 2개, 엄지 외 각도 3개씩
-    ang_0_0, ang_0_1, ang_1_0, ang_1_1, ang_1_2, ang_2_0, ang_2_1, ang_2_2, ang_3_0, ang_3_1, ang_3_2, ang_4_0, ang_4_1, ang_4_2 = [], [], [], [], [], [], [], [], [], [], [], [], [], []
-    total = [ang_0_0, ang_0_1, ang_1_0, ang_1_1, ang_1_2, ang_2_0, ang_2_1, ang_2_2, ang_3_0, ang_3_1, ang_3_2, ang_4_0,
-             ang_4_1, ang_4_2]
+    total = [[], [], [], [], [], [], [], [], [], [], [], [], [], []]
     total_name = ['ang_0_0', 'ang_0_1', 'ang_1_0', 'ang_1_1', 'ang_1_2', 'ang_2_0', 'ang_2_1', 'ang_2_2', 'ang_3_0',
                   'ang_3_1', 'ang_3_2', 'ang_4_0', 'ang_4_1', 'ang_4_2']
 
