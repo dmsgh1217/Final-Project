@@ -7,6 +7,7 @@
 # 변경된 라이브러리에서 정규화(Normalization) 작업을 설정할 수 있는 플래그 변수 추가
 # 플래그 변수 추가에 따른 딕셔너리 및 리스트 생성 과정 변경
 # 플래그 변수 추가에 따른 파일 저장 형식 변경
+# 데이터프레임(df)을 저장할 때 파일명 형식 변경
 
 # Release 1.0 by Min-chul
 # 최초 버전 공유
@@ -34,8 +35,6 @@ if __name__ == '__main__':
 
     # 지정한 디렉토리에서 .mp4 확장자를 가진 파일만 가져옵니다.
     video_list = glob.glob('./videosource/*.mp4')
-
-    generator_count = 1
     for filename in video_list:
         s_time = time.time()
         cap = cv2.VideoCapture(filename='./videosource/sbk_move_2.mp4', apiPreference=None)
@@ -126,7 +125,9 @@ if __name__ == '__main__':
                 break
         # 데이터프레임(df)을 "rawdata" 디렉토리에 저장합니다. 인덱스는 부여하지 않습니다.
         print(f'runtime is {(time.time() - s_time):.3f} seconds.')
-        save_name = f'{generator_count}_{category}_normalize' if normalization_flag else f'{generator_count}_{category}'
-        df.to_csv(f'./rawdata/{save_name}.csv', index=False)
-        print(f'"{save_name}.csv" is saved.')
-        generator_count += 1
+        # 데이터프레임(df)의 파일 이름을 결정하기 위해 불러온 영상 파일의 이름을 수정합니다.
+        split_filename = filename.split('\\')[-1].replace('.mp4', '')
+        save_filename = f'{split_filename}_normalize' if normalization_flag else f'{split_filename}'
+        # 데이터프레임(df)을 저장합니다.
+        df.to_csv(f'./rawdata/{save_filename}.csv', index=False)
+        print(f'"{save_filename}.csv" is saved.')
