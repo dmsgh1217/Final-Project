@@ -63,6 +63,8 @@ class HandDetector:
                     xList.append(px)
                     yList.append(py)
 
+                myHand["lmList"] = mylmList
+
                 ## bbox
                 if not normalization:
                     xmin, xmax = min(xList), max(xList)
@@ -72,7 +74,7 @@ class HandDetector:
                     cx, cy = bbox[0] + (bbox[2] // 2), \
                              bbox[1] + (bbox[3] // 2)
 
-                    myHand["lmList"] = mylmList
+
                     myHand["bbox"] = bbox
                     myHand["center"] = (cx, cy)
 
@@ -97,7 +99,7 @@ class HandDetector:
         if draw and not normalization:
             return allHands, img
         else:
-            return allHands
+            return allHands, None
 
     def fingersUp(self, myHand):
         """
