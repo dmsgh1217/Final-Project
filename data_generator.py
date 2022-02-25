@@ -37,7 +37,7 @@ if __name__ == '__main__':
     video_list = glob.glob('./videosource/*.mp4')
     for filename in video_list:
         s_time = time.time()
-        cap = cv2.VideoCapture(filename='./videosource/sbk_move_2.mp4', apiPreference=None)
+        cap = cv2.VideoCapture(filename=filename, apiPreference=None)
         print(f'"{filename}" is opened.')
         category = None
         # 영상 파일의 파일명에서 라벨 이름을 찾기위한 작업을 수행합니다.
