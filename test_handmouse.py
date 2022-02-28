@@ -1,11 +1,40 @@
+# Release 1.1 by Min-chul
+# 멀티스레드 실행하는 코드를 함수화
+# 42차원의 좌표(Location) 데이터와 좌표 데이터를 기반으로 산출한 14차원의 각도(Angle) 데이터를 병합하는 알고리즘 추가
+# pyautogui 라이브러리 제거 -> GUI 스크립트에서 사용 예정
+
 from tensorflow.keras.models import load_model
 from threading import Thread
 import cv2
 import mediapipe as mp
 import numpy as np
-import pyautogui
 import pickle
 import time
+import prj_function_directory as pfd
+
+
+def initialize_thread():
+    # 인공지능 모델로 입력(좌표 + 각도)데이터를 주고 출력(분류된 카테고리) 결과를 획득하는 서브스레드를 실행합니다.
+    try:
+        thread_predict_motion = Thread(target=predict_motion, name='predict_motion')
+        thread_predict_motion.daemon = True
+        thread_predict_motion.start()
+    except Exception as E:
+        print(f'Cannot launched "{thread_predict_motion.name}" thread..\nError: {E}')
+        exit()
+    else:
+        print(f'"{thread_predict_motion.name}" thread start.')
+
+    # 좌클릭 이벤트 처리를 위한 서브스레드를 실행합니다.
+    try:
+        thread_click_trigger = Thread(target=click_trigger, name='click_trigger')
+        thread_click_trigger.daemon = True
+        thread_click_trigger.start()
+    except Exception as E:
+        print(f'Cannot launched "{thread_click_trigger.name}" thread..\nError: {E}')
+        exit()
+    else:
+        print(f'"{thread_click_trigger.name}" thread start.')
 
 
 # 멀티스레드 - 1
@@ -25,15 +54,16 @@ def predict_motion():
                 # "softmax"함수를 사용하여 획득한 결과값 중 가장 큰 확률값을 가진 카테고리를 라벨에 매핑(mapping)합니다.
                 predict_result['category'] = label[np.argmax(predict_value)]
                 # 가장 큰 확률값을 cv2.imshow()에서 확인하기 위해 자릿수 표현 및 문자열 변환 과정을 수행합니다.
-                predict_result['ratio'] = ''.join([str(np.around(np.max(predict_value), 4)), '%'])
-                # predict_result['ratio'] = np.max(predict_value)
+                # predict_result['ratio'] = ''.join([str(np.around(np.max(predict_value), 4)), '%'])
+                predict_result['ratio'] = np.max(predict_value)
                 # print(predict_result['ratio'], type(predict_result['ratio']))
                 # 모델의 분류 결과가 "click"이면 클릭 이벤트 처리를 위한 스레드 모듈 활성화를 진행합니다.
-                if predict_result['category'] == 'click' and not CLICK_FLAG['run']:
+                if predict_result['category'] == 'leftclick' and not CLICK_FLAG['run']:
                     CLICK_FLAG['detect'] = True
         time.sleep(0.01)
 
 
+# 멀티스레드 - 2
 def click_trigger():
     global CLICK_FLAG, click_count
     while True:
@@ -54,7 +84,7 @@ def click_trigger():
                 # 실시간으로 분류하고 있는 모델의 결과가 스레드 내에서 선언한 현재 상태와 다를 경우, 상태의 변화가 발생하였다고 처리합니다.
                 if predict_result['category'] != current_status:
                     # 상태가 변화해도 "Move" 또는 "Click"상태로 변화하였을 때만 상태변화로 처리합니다.
-                    if predict_result['category'] == 'click' or predict_result['category'] == 'move':
+                    if predict_result['category'] == 'leftclick' or predict_result['category'] == 'move':
                         # 상태가 변화하였으므로, 현재 상태값을 모델이 분류한 결과값으로 대체합니다.
                         current_status = predict_result['category']
                         # 상태가 1회 변화하였으므로 카운트를 추가합니다.
@@ -64,7 +94,7 @@ def click_trigger():
                     break
                 time.sleep(0.01)
             # 상태가 몇 번 변화하였는지 디버그합니다.
-            # print(f'status_count: {status_count}')
+            print(f'status_count: {status_count}')
             # 상태 변화 횟수가 0이면 제한 시간내에 계속해서 "Click"상태를 유지하고 있으므로 "Drag"이벤트로 연결합니다.
             if status_count == 0:
                 print(f'Drag')
@@ -79,7 +109,7 @@ def click_trigger():
             CLICK_FLAG['detect'] = False
             # 스레드 내부 함수 실행이 종료되었으므로, CLICK_FLAG['run'] 변수를 "False"로 변경하여 비활성화 상태임을 명시합니다.
             CLICK_FLAG['run'] = False
-            print(f'end thread.')
+            # print(f'end thread.')
         time.sleep(0.01)
 
 
@@ -92,15 +122,13 @@ if __name__ == '__main__':
     # 설정하고자 하는 카메라의 해상도 값을 가져옵니다.
     cam_width, cam_height = 1280, 720
     # 인공지능 모델을 가져옵니다.
-    model = load_model('./models/test2_seq5_test1.h5')
+    model = load_model('./models/model_seq5_loc_angle.h5')
     # 라벨과 관련된 인코더 정보를 가져옵니다.
-    with open('./resources/encoder_loc_data_lbl.pickle', 'rb') as f:
+    with open('./resources/encoder_loc_angle_data_lbl_d56.pickle', 'rb') as f:
         encoder = pickle.load(f)
         label = encoder.classes_
     # 모델이 예측한 결과 값을 저장하는 객체를 생성합니다.
-    predict_result = {'category': '', 'ratio': ''}
-    # 사용자의 실제 디스플레이 해상도 값을 획득합니다.
-    screen_width, screen_height = pyautogui.size()
+    predict_result = {'category': 'default', 'ratio': 0.0}
     # 클릭 이벤트, 더블 클릭 이벤트, 드래그 이벤트에 사용할 변수를 초기화합니다.
     click_interval = 0.5
     click_count = 0
@@ -109,33 +137,10 @@ if __name__ == '__main__':
     PREDICT_FLAG = False
     CLICK_FLAG = {'detect': False, 'run': False}
 
-    # 멀티스레드 모듈을 초기화하고, 설정이 완료되면 실행합니다.
-    while True:
-        try:
-            thread_predict_motion = Thread(target=predict_motion, name='predict_motion')
-            thread_predict_motion.daemon = True
-            thread_predict_motion.start()
-        except Exception as E:
-            print(f'Cannot launched "{thread_predict_motion.name}" thread.. retry after 3 seconds.\nError: {E}')
-            time.sleep(3)
-        else:
-            print(f'"{thread_predict_motion.name}" thread start.')
-            break
-
-    while True:
-        try:
-            thread_click_trigger = Thread(target=click_trigger, name='click_trigger')
-            thread_click_trigger.daemon = True
-            thread_click_trigger.start()
-        except Exception as E:
-            print(f'Cannot launched "{thread_click_trigger.name}" thread.. retry after 3 seconds.\nError: {E}')
-            time.sleep(3)
-        else:
-            print(f'"{thread_click_trigger.name}" thread start.')
-            break
+    # 서브스레드를 실행하는 함수를 호출합니다.
+    initialize_thread()
 
     print(f'Video resolution: {cam_width, cam_height}')
-    print(f'Monitor resolution: {screen_width, screen_height}')
 
     # OpenCV 라이브러리를 이용하여 비디오 객체를 생성합니다.
     cap = cv2.VideoCapture(0)
@@ -185,24 +190,27 @@ if __name__ == '__main__':
 
                 # 각 랜드마크의 좌표값이 정상인 경우에만 이하 프로세스를 실행합니다.
                 if not none_flag:
-                    # 구성된 segment 변수는 N 차원으로 구성된 데이터이므로, 1차원 데이터로 변형합니다.
+                    # 42차원의 좌표 데이터를 함수의 입력 형태에 맞게 x, y 리스트로 재구성합니다.
+                    loc_x, loc_y = [], []
+                    for idx in range(len(segment)):
+                        loc_x.append(segment[idx][0])
+                        loc_y.append(segment[idx][1])
+
+                    # 42차원의 좌표 데이터를 이용하여 14차원의 각도(Angle) 데이터를 리턴하는 함수를 호출합니다.
+                    angle_segment = np.array(pfd.convert_angle(x=loc_x, y=loc_y))
+
+                    # 구성된 segment 변수는 42차원으로 구성된 좌표(Location) 데이터이므로, 1차원 데이터로 변형합니다.
                     segment = segment.flatten()
-                    # 좌표 함수 추가(42차원)    .reshape(-1, 42)
-                    # 각도 함수 추가(14차원)    .reshape(-1, 14)
-                    # 비율 함수 추가(5차원)     .reshape(-1, 5)
-                    # 모델의 입력 형태(42, )에 맞추기 위해 데이터(segment)의 형태를(1, 42)로 변형합니다.
-                    segment = segment.reshape(-1, 42)
+
+                    # 42차원 좌표 데이터와 14차원 각도 데이터를 병합합니다.
+                    segment = np.concatenate([segment, angle_segment])
+
+                    # 모델의 입력 형태에 맞추기 위해 데이터(segment)의 형태를(1, n)로 변형합니다.
+                    segment = segment.reshape(-1, segment.shape[0])
                     # 멀티스레드의 동작을 활성화 하기 위해 플래그를 설정합니다.
                     PREDICT_FLAG = True
                 # print(type(segment), len(segment))
                 # print(segment)
-                ###
-                """
-                None값이 들어갈 수 있으므로
-                여기서 None이 있나 없나를 검사 할 예정임.
-                None이 없으면, 정상적으로 변환 함수 호출 -> 분류를 하겠다.
-                None이 있으면, 호출하지 않고 그냥 Pass -> 분류를 하지 않겠다.
-                """
 
         # 좌측 하단에 모델이 분류한 결과값을 표출합니다.
         # text = ''.join([predict_result[0], '   ', predict_result[1]])
@@ -214,8 +222,16 @@ if __name__ == '__main__':
         # print(ratio)
         cv2.putText(frame, predict_result['category'], (20, 680), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255),
                     thickness=2)
-        cv2.putText(frame, predict_result['ratio'], (100, 680), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 0, 0),
-                    thickness=2)
+        output_ratio = ''.join([str(np.around(np.max(predict_result["ratio"]), 4)), '%'])
+        if predict_result['ratio'] >= 0.9:
+            cv2.putText(frame, output_ratio, (150, 680), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0),
+                        thickness=2)
+        elif 0.8 <= predict_result['ratio'] < 0.9:
+            cv2.putText(frame, output_ratio, (150, 680), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 255),
+                        thickness=2)
+        else:
+            cv2.putText(frame, output_ratio, (150, 680), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255),
+                        thickness=2)
         # 좌측 상단에 FPS 를 출력합니다.
         cv2.putText(frame, str(fps), (20, 20), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0), thickness=2)
         cv2.imshow('test', frame)
