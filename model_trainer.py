@@ -2,6 +2,7 @@
 
 # Release 1.1 by Min-chul
 # Dense Layer 출력 노드의 갯수를 전처리 된 카테고리의 갯수(output_units)만큼 자동으로 반영되도록 수정
+# 일부 코드 재구성(Refactoring)
 
 # Release 1.0 by Min-chul
 
@@ -191,16 +192,8 @@ def train_model(**kwargs):
 
 
 if __name__ == '__main__':
-    # 학습 하려는 액션(category)을 정의합니다.
-    action = ['move', 'leftclick', 'rightclick', 'scroll', 'pause', 'screenshot']
-
     # 전처리된 데이터(.npy)를 불러옵니다.
-    # x_train, x_test, y_train, y_test = np.load(file='./resources/encoder_loc_data.npy', allow_pickle=True)
     x_train, x_test, y_train, y_test = np.load(file='./resources/encoder_loc_data_d42.npy', allow_pickle=True)
-    print(f'x_train.shape: {x_train.shape}')
-    print(f'y_train.shape: {y_train.shape}')
-    print(f'x_test.shape: {x_test.shape}')
-    print(f'y_test.shape: {y_test.shape}')
 
     # 인공지능 모델 함수를 호출하여 전처리된 데이터를 학습하고 결과값을 획득합니다.
     # model_sequence: 구성한 인공지능 네트워크에 번호를 부여하여 전달한 번호의 네트워크에 학습을 진행합니다.
