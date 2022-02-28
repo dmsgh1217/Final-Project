@@ -192,6 +192,7 @@ def train_model(**kwargs):
 
 
 if __name__ == '__main__':
+
     # 전처리된 데이터(.npy)를 불러옵니다.
     x_train, x_test, y_train, y_test = np.load(file='./resources/encoder_loc_data_d42.npy', allow_pickle=True)
 
