@@ -2,6 +2,7 @@
 
 # Release 1.1 by Min-chul
 # Dense Layer 출력 노드의 갯수를 전처리 된 카테고리의 갯수(output_units)만큼 자동으로 반영되도록 수정
+# 일부 코드 재구성(Refactoring)
 
 # Release 1.0 by Min-chul
 
@@ -12,6 +13,9 @@ from tensorflow.keras.models import Sequential
 import matplotlib.pyplot as plt
 import numpy as np
 import os
+
+# 학습 하려는 액션(category)을 정의합니다.
+label_list = ['move', 'leftclick', 'rightclick', 'scroll', 'pause', 'screenshot']
 
 
 def train_model(**kwargs):
@@ -191,9 +195,6 @@ def train_model(**kwargs):
 
 
 if __name__ == '__main__':
-    # 학습 하려는 액션(category)을 정의합니다.
-    action = ['move', 'click']
-
     # 전처리된 데이터(.npy)를 불러옵니다.
     # x_train, x_test, y_train, y_test = np.load(file='./resources/encoder_loc_data.npy', allow_pickle=True)
     x_train, x_test, y_train, y_test = np.load(file='./resources/encoder_loc_data_d42.npy', allow_pickle=True)
