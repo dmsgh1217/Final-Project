@@ -1,5 +1,8 @@
 # 전처리된 데이터를 활용하여 인공지능 모델을 학습하는 스크립트 입니다.
 
+# Release 1.1 by Min-chul
+# Dense Layer 출력 노드의 갯수를 전처리 된 카테고리의 갯수(output_units)만큼 자동으로 반영되도록 수정
+
 # Release 1.0 by Min-chul
 
 from datetime import datetime
@@ -24,6 +27,8 @@ def train_model(**kwargs):
 
     # 모델의 입력 차원을 정의합니다.
     input_shape = x_train[0].shape
+    # Dense Layer 출력 노드의 갯수를 전처리된 카테고리의 갯수만큼 정의합니다.
+    output_units = len(y_train[0])
     print(f'input_shape: {input_shape}')
     if model_sequence == 1:
         epoch = 150
@@ -36,7 +41,7 @@ def train_model(**kwargs):
                               Dense(32, activation='relu'),
                               Dropout(0.1),
                               Dense(16, activation='relu'),
-                              Dense(2, activation='softmax')])
+                              Dense(output_units, activation='softmax')])
         network.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
         network.summary()
         network_history = network.fit(x_train, y_train, validation_data=(x_test, y_test), epochs=epoch,
@@ -57,7 +62,7 @@ def train_model(**kwargs):
                               Dense(32, activation='relu'),
                               Dropout(0.1),
                               Dense(16, activation='relu'),
-                              Dense(2, activation='softmax')])
+                              Dense(output_units, activation='softmax')])
         network.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
         network.summary()
         network_history = network.fit(x_train, y_train, validation_data=(x_test, y_test), epochs=epoch,
@@ -80,7 +85,7 @@ def train_model(**kwargs):
                               Dense(32, activation='relu'),
                               Dropout(0.1),
                               Dense(16, activation='relu'),
-                              Dense(2, activation='softmax')])
+                              Dense(output_units, activation='softmax')])
         network.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
         network.summary()
         network_history = network.fit(x_train, y_train, validation_data=(x_test, y_test), epochs=epoch,
@@ -105,7 +110,7 @@ def train_model(**kwargs):
                               Dense(32, activation='relu'),
                               Dropout(0.1),
                               Dense(16, activation='relu'),
-                              Dense(2, activation='softmax')])
+                              Dense(output_units, activation='softmax')])
         network.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
         network.summary()
         network_history = network.fit(x_train, y_train, validation_data=(x_test, y_test), epochs=epoch,
@@ -127,7 +132,7 @@ def train_model(**kwargs):
                               Dense(32, activation='elu'),
                               Dropout(0.1),
                               Dense(16, activation='elu'),
-                              Dense(2, activation='softmax')])
+                              Dense(output_units, activation='softmax')])
         network.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
         network.summary()
         network_history = network.fit(x_train, y_train, validation_data=(x_test, y_test), epochs=epoch,
@@ -151,7 +156,7 @@ def train_model(**kwargs):
                               Dense(32, activation='swish'),
                               Dropout(0.1),
                               Dense(16, activation='swish'),
-                              Dense(2, activation='softmax')])
+                              Dense(output_units, activation='softmax')])
         network.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
         network.summary()
         network_history = network.fit(x_train, y_train, validation_data=(x_test, y_test), epochs=epoch,
@@ -174,7 +179,7 @@ def train_model(**kwargs):
                               Dense(32, activation='relu'),
                               Dropout(0.1),
                               Dense(16, activation='relu'),
-                              Dense(2, activation='softmax')])
+                              Dense(output_units, activation='softmax')])
         network.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
         network.summary()
         network_history = network.fit(x_train, y_train, validation_data=(x_test, y_test), epochs=epoch,
