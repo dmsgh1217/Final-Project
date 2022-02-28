@@ -192,9 +192,6 @@ def train_model(**kwargs):
 
 
 if __name__ == '__main__':
-    # 학습 하려는 액션(category)을 정의합니다.
-    label_list = ['move', 'leftclick', 'rightclick', 'scroll', 'pause', 'screenshot']
-
     # 전처리된 데이터(.npy)를 불러옵니다.
     x_train, x_test, y_train, y_test = np.load(file='./resources/encoder_loc_data_d42.npy', allow_pickle=True)
     print(f'x_train.shape: {x_train.shape}')
