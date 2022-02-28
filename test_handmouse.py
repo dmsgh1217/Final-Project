@@ -1,8 +1,13 @@
+# Release 1.2 by Min-chul
+# 큐(Queue) 기능을 활용한 시퀀스(Sequence) 라인 생성
+# 큐를 기반으로 생성한 시퀀스 데이터 조건 분기문 관리기능 추가(예정)
+
 # Release 1.1 by Min-chul
 # 멀티스레드 실행하는 코드를 함수화
 # 42차원의 좌표(Location) 데이터와 좌표 데이터를 기반으로 산출한 14차원의 각도(Angle) 데이터를 병합하는 알고리즘 추가
 # pyautogui 라이브러리 제거 -> GUI 스크립트에서 사용 예정
 
+from collections import deque
 from tensorflow.keras.models import load_model
 from threading import Thread
 import cv2
@@ -37,10 +42,25 @@ def initialize_thread():
         print(f'"{thread_click_trigger.name}" thread start.')
 
 
+def manage_queue():
+    global test_queue
+    if len(test_queue) > 3:
+        for queue_idx in range(len(test_queue)):
+            if test_queue[0] != test_queue[queue_idx]:
+                test_queue.popleft()
+                return False, 'default'
+
+        queue_result = test_queue[0]
+        test_queue = deque()
+        return True, queue_result
+    else:
+        return False, 'default'
+
+
 # 멀티스레드 - 1
 # 영상으로부터 획득한 랜드마크의 좌표 또는 각도 및 비율 데이터를 이용하여 인공지능 모델로부터 출력값을 획득하는 스레드입니다.
 def predict_motion():
-    global PREDICT_FLAG, CLICK_FLAG, predict_result
+    global PREDICT_FLAG, CLICK_FLAG, predict_result, test_queue
     while True:
         if PREDICT_FLAG:
             PREDICT_FLAG = False
@@ -60,6 +80,11 @@ def predict_motion():
                 # 모델의 분류 결과가 "click"이면 클릭 이벤트 처리를 위한 스레드 모듈 활성화를 진행합니다.
                 if predict_result['category'] == 'leftclick' and not CLICK_FLAG['run']:
                     CLICK_FLAG['detect'] = True
+
+                # QUEUE에 추가
+                test_queue.append(predict_result['category'])
+                res, stat = manage_queue()
+                print(res, stat, f'test_queue: {test_queue}')
         time.sleep(0.01)
 
 
@@ -94,16 +119,19 @@ def click_trigger():
                     break
                 time.sleep(0.01)
             # 상태가 몇 번 변화하였는지 디버그합니다.
-            print(f'status_count: {status_count}')
+            # print(f'status_count: {status_count}')
             # 상태 변화 횟수가 0이면 제한 시간내에 계속해서 "Click"상태를 유지하고 있으므로 "Drag"이벤트로 연결합니다.
             if status_count == 0:
-                print(f'Drag')
+                # print(f'Drag')
+                pass
             # 상태 변화 횟수가 1이면 제한 시간내에 "Move"로 변화하였으므로 "Click"이벤트로 연결합니다.
             elif status_count == 1:
-                print(f'Click')
+                # print(f'Click')
+                pass
             # 상태 변화 횟수가 3회 이상이면, 제한 시간내에 "Move" -> "Click" -> "Move"로 변화하였으므로 "Double-Click"이벤트로 연결합니다.
             elif status_count >= 3:
-                print(f'Double-Click')
+                # print(f'Double-Click')
+                pass
 
             # 스레드 내부 함수 실행이 종료되었으므로, 부분 동작 처리를 활성화 할 수 있도록 CLICK_FLAG['detect']를 "False"로 변경합니다.
             CLICK_FLAG['detect'] = False
@@ -114,6 +142,7 @@ def click_trigger():
 
 
 if __name__ == '__main__':
+    test_queue = deque()
     # 미디어파이프 라이브러리에서 제공하는 함수를 사용하기 위한 객체를 생성합니다.
     mp_hands = mp.solutions.hands
     mp_drawing = mp.solutions.drawing_utils
@@ -122,7 +151,7 @@ if __name__ == '__main__':
     # 설정하고자 하는 카메라의 해상도 값을 가져옵니다.
     cam_width, cam_height = 1280, 720
     # 인공지능 모델을 가져옵니다.
-    model = load_model('./models/model_seq5_loc_angle.h5')
+    model = load_model('./models/model_seq5_loc_angle(default).h5')
     # 라벨과 관련된 인코더 정보를 가져옵니다.
     with open('./resources/encoder_loc_angle_data_lbl_d56.pickle', 'rb') as f:
         encoder = pickle.load(f)
