@@ -1,6 +1,7 @@
 import glob
 import numpy as np
 import pandas as pd
+from sklearn.utils import shuffle
 
 
 def reference_loc(x, y):
@@ -61,6 +62,8 @@ def convert_angle(x, y, normalization=360):  # 각도에 대한 DataFrame 생성
 def df_concat(**kwargs):
     path = kwargs['path'] if 'path' in kwargs else './rawdata'
     name = kwargs['name'] if 'name' in kwargs else 'integration'
+    # 다른 함수에서 데이터 프레임 자체를 리턴받고 싶은 경우, "True"를 인자값으로 전달하면 됩니다.
+    ref = kwargs['ref'] if 'ref' in kwargs else False
 
     # 지정한 디렉토리에서 .csv 확장자를 가진 파일만 가져옵니다.
     df_list = glob.glob(f'{path}/*.csv')
@@ -71,7 +74,7 @@ def df_concat(**kwargs):
     # "df_list"등록된 파일의 갯수만큼 반복합니다.
     for filename in df_list:
         # 통합본(integration.csv)이 이미 생성되어 있는 경우, 데이터프레임 통합에서 제외합니다.
-        if 'integration' not in filename:
+        if name not in filename:
             # 데이터프레임을 불러옵니다.
             read_df = pd.read_csv(filename, index_col=False)
             # 기존에 구성된 데이터프레임(df)과 새로 불러온 데이터프레임(read_df)을 통합합니다.
@@ -79,3 +82,32 @@ def df_concat(**kwargs):
     # 통합본(integration.csv)을 "rawdata"디렉토리에 저장합니다.
     name = ''.join([name, f'_col{len(df)}.csv'])
     df.to_csv(f'{path}/{name}', index=False)
+
+    if ref:
+        return df
+
+# 데이터 분포를 균등하게 만들어 주는 함수 입니다.
+def split_evenly_df(path='./rawdata', name='integration', ref=False):
+    df = df_concat(path=path, name=name, ref=ref)
+    cat_uniq = (df['category'].unique()).tolist()
+
+    # print(cat_uniq)
+    # print(type(cat_uniq))
+
+    # 데이터 분량의 최소값 산출
+    min_volume = 987654321
+    for i in cat_uniq:
+        if min_volume > len(df[df.category == i]):
+            min_volume = len(df[df.category == i])
+
+    # 최종 데이터 프레임 생성
+    final_df = pd.DataFrame()
+    for i in cat_uniq:
+        temp_df = df[df.category == i]  # 임시 데이터 프레임에 카테고리 하나만 입력
+        temp_df = (shuffle(temp_df)).head(min_volume)  # 임시 데이터프레임을 섞고, 최소치만큼 출력
+        temp_df.reset_index(drop=True, inplace=True)  # 리셋 인덱스
+        final_df = pd.concat([final_df, temp_df])  # 최종 데이터프레임에 통합
+
+    final_df.reset_index(drop=True, inplace=True)
+
+    return final_df

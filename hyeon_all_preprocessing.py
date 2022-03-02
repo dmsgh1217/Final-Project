@@ -1,23 +1,24 @@
 # 생성된 데이터를 원하는 데이터로 가공해서 전처리 하는 프로세스 입니다.
-# Release 1.5 ver by hyeon-sam, Ji-young
+# Release 1.8 Ver by Hyeon-sam, Ji-young
 
 import numpy as np
 import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
 from tensorflow.keras.utils import to_categorical
-from prj_function_directory import sol_ratio, getAngle3P
-import pickle, math
+import prj_function_directory as pfd
+import pickle
 
 # 사용자 지정 리소스
-__loc = False  # 좌표데이터 활용시 True
-__ratio = True  # 비율데이터 활용시 True
+__loc = True  # 좌표데이터 활용시 True
+__ratio = False  # 비율데이터 활용시 True
 __angle = False  # 각도데이터 활용시 True
 ratio_norm = 2.5  # 비율 표준화 수치
 angle_norm = 360  # 각도 표준화 수치
 encoder_folder_location = 'resources/'
 npy_folder_location = 'resources/'
-df = pd.read_csv('./resources/landmark_position_normalize_w1280_h720.csv')
+df = pfd.split_evenly_df(ref=True)  # 데이터 프레임 통합 및 균일화 함수
+# df = pd.read_csv('./resources/rock_scissor_paper_nomallize_data_w_640_h_480.csv')
 
 # 본 코드
 result_ang_df = pd.DataFrame()  # 각도 데이터 프레임
@@ -33,6 +34,10 @@ df.reset_index(drop=True, inplace=True)  # 인덱스 초기화
 # 카데고리 분리
 Y = df['category']  # 카테고리 y값으로 추출
 X = df.loc[:, df.columns != 'category']  # 카테고리를 제외한 X값 추출
+
+# 컬럼개수 세는 코드
+total_col_vol = 0
+volume_loc = len(X.columns)  # 좌표데이터의 컬럼수를 가져온다.
 
 # 데이터 프레임 생성 함수
 def create_df(param, total, total_name, norm):
@@ -51,14 +56,13 @@ def start_create_ratio_df(normalization=2.5):
     global result_ratio_df
 
     print('start_ratio_calc')
-    ratio_0, ratio_1, ratio_2, ratio_3, ratio_4 = [], [], [], [], []
-    total = [ratio_0, ratio_1, ratio_2, ratio_3, ratio_4]
+    total = [[], [], [], [], []]
     total_name = ['ratio_0', 'ratio_1', 'ratio_2', 'ratio_3', 'ratio_4']
     fingers = [[4, 5, 17], [8, 5, 0], [12, 9, 0], [16, 13, 0], [20, 17, 0]]  # 엄지~새끼손가락 순
 
     for i in range(len(X)):  # 엄지 / 검지~새끼손가락 비율 산출을 위한 포인트는 각각 다름
         for j in range(len(total)):
-            total[j].append(sol_ratio(X[f'x{fingers[j][0]}'][i], X[f'y{fingers[j][0]}'][i],
+            total[j].append(pfd.sol_ratio(X[f'x{fingers[j][0]}'][i], X[f'y{fingers[j][0]}'][i],
                                       X[f'x{fingers[j][1]}'][i], X[f'y{fingers[j][1]}'][i],
                                       X[f'x{fingers[j][2]}'][i], X[f'y{fingers[j][2]}'][i]))
 
@@ -78,9 +82,7 @@ def start_create_angle_df(normalization=360):
     fingers = [[4, 3, 2, 1], [8, 7, 6, 5, 9], [12, 11, 10, 9, 13], [16, 15, 14, 13, 17], [20, 19, 18, 17, 0]]  # 엄지~새끼손가락 순
 
     # 엄지 = 각도 2개, 엄지 외 각도 3개씩
-    ang_0_0, ang_0_1, ang_1_0, ang_1_1, ang_1_2, ang_2_0, ang_2_1, ang_2_2, ang_3_0, ang_3_1, ang_3_2, ang_4_0, ang_4_1, ang_4_2 = [], [], [], [], [], [], [], [], [], [], [], [], [], []
-    total = [ang_0_0, ang_0_1, ang_1_0, ang_1_1, ang_1_2, ang_2_0, ang_2_1, ang_2_2, ang_3_0, ang_3_1, ang_3_2, ang_4_0,
-             ang_4_1, ang_4_2]
+    total = [[], [], [], [], [], [], [], [], [], [], [], [], [], []]
     total_name = ['ang_0_0', 'ang_0_1', 'ang_1_0', 'ang_1_1', 'ang_1_2', 'ang_2_0', 'ang_2_1', 'ang_2_2', 'ang_3_0',
                   'ang_3_1', 'ang_3_2', 'ang_4_0', 'ang_4_1', 'ang_4_2']
 
@@ -92,7 +94,7 @@ def start_create_angle_df(normalization=360):
             for j in range(count):
                 # total list의 0, 1번의 엄지 index 제외한 손가락 각도 계산 필요하므로 1 + 필요
                 total[_step + j].append(
-                    getAngle3P([X[f'x{fingers[i][j]}'][k], X[f'y{fingers[i][j]}'][k]],
+                    pfd.getAngle3P([X[f'x{fingers[i][j]}'][k], X[f'y{fingers[i][j]}'][k]],
                                [X[f'x{fingers[i][j + 1]}'][k], X[f'y{fingers[i][j + 1]}'][k]],
                                [X[f'x{fingers[i][j + 2]}'][k], X[f'y{fingers[i][j + 2]}'][k]]))
 
@@ -110,16 +112,19 @@ name = ''
 
 if __loc == True:
     name = name + '_loc'
+    total_col_vol += volume_loc
     final_use_df = pd.concat([final_use_df, X], axis=1)  # 좌표데이터 통합
 
 if __ratio == True:
     name = name + '_ratio'
     start_create_ratio_df(normalization=ratio_norm)
+    total_col_vol += len(result_ratio_df.columns)
     final_use_df = pd.concat([final_use_df, result_ratio_df], axis=1)  # 비율데이터 통합
 
 if __angle == True:
     name = name + '_angle'
     start_create_angle_df(normalization=angle_norm)
+    total_col_vol += len(result_ang_df.columns)
     final_use_df = pd.concat([final_use_df, result_ang_df], axis=1)  # 각도데이터 통합
 
 final_use_df.info()
@@ -140,17 +145,18 @@ print(onehot_Y.shape)
 X_train, X_test, Y_train, Y_test = train_test_split(final_use_df, onehot_Y, test_size=0.1)  # 테스트 데이터 분리, test_size = 0.1으로 고정
 print(X_train.shape, Y_train.shape)
 print(X_test.shape, Y_test.shape)
+print(total_col_vol)
 
 xy = X_train, X_test, Y_train, Y_test
 
 # 데이터 저장
 if [__loc, __ratio, __angle] == [True, True, True]:
-    np.save('./{}encoder_complex_data'.format(npy_folder_location), xy)
+    np.save('./{}encoder_complex_data_d{}'.format(npy_folder_location, total_col_vol), xy)
 
-    with open('./{}encoder_complex_data_lbl.pickle'.format(encoder_folder_location), 'wb') as f:
+    with open('./{}encoder_complex_data_lbl_d{}.pickle'.format(encoder_folder_location, total_col_vol), 'wb') as f:
         pickle.dump(encoder, f)
 else:
-    np.save('./{}encoder{}_data'.format(npy_folder_location, name), xy)
+    np.save('./{}encoder{}_data_d{}'.format(npy_folder_location, name, total_col_vol), xy)
 
-    with open('./{}encoder{}_data_lbl.pickle'.format(encoder_folder_location, name), 'wb') as f:
+    with open('./{}encoder{}_data_lbl_d{}.pickle'.format(encoder_folder_location, name, total_col_vol), 'wb') as f:
         pickle.dump(encoder, f)
