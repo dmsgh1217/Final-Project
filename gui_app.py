@@ -6,20 +6,18 @@ import numpy as np
 
 import cv2
 import os
-
 from PyQt5 import QtCore, QtWidgets, QtGui
 from PyQt5.QtGui import QMovie #이미지 파일 보여줄 때 사용하는 패키지
 from PyQt5.QtCore import pyqtSignal, QObject, pyqtSlot
 from PyQt5.QtWidgets import QApplication, QMainWindow
 from PyQt5 import uic
 
+import prj_function_directory as pfd
+import handmouse
 
 # 바탕화면에 실행 버튼 띄우기 위한 클래스 정의
-import refactoring_handmouse
-
-
 class GUI(QtWidgets.QMainWindow):
-    def __init__(self, img_path, xy, size=1.0, on_top=True):
+    def __init__(self, img_path, xy, size=1.0, on_top=False):
         super(GUI, self).__init__()
 
         # self.timer = QtCore.QTimer(self)
@@ -61,6 +59,33 @@ class GUI(QtWidgets.QMainWindow):
 
         self.setGeometry(self.xy[0], self.xy[1], w, h)
 
+# momentum...
+#
+
+
+def icon_control(tf, event):
+    if tf:
+        if event == 'leftclick':
+            print('true_1')
+            # Btn1 = GUI('img/1_mouse_btn_img_3.png', xy=[1630, 370], size=0.15, on_top=True)
+        else:
+            print('else_1')
+            # Btn1 = GUI('img/1_mouse_btn_img_2.png', xy=[1630, 370], size=0.15, on_top=True)
+    else:
+        print('pass')
+
+#Btn1 = GUI('img/1_mouse_btn_img.png', xy=[1630, 370], size=0.15, on_top=True)
+
+# 아이콘 크기 512 * 512 (px) 의 0.15 배
+# x나 y 둘중 하나라도 아이콘 영역을 벗어나면 False를 준다.
+def icon_in(x, y, sx, sy, h=int(512 * 0.15), w=int(512 * 0.15)):
+    result = False if sx > x or sx + h < x else True
+    result = False if sy > y or sy + w < y else True
+    # if sx > x or sx + h < x: result = False
+    # if sy > y or sy + w < y: result = False
+
+    return result
+
 
 def thread_cam():
     # 미디어파이프 라이브러리에서 제공하는 함수를 사용하기 위한 객체를 생성합니다.
@@ -79,7 +104,10 @@ def thread_cam():
     cam_width, cam_height = 1440, 810 #FULL HD의 75% 사이즈
     # OpenCV 라이브러리를 이용하여 비디오 객체를 생성합니다.
     cap = cv2.VideoCapture(0)
+
     while cap.isOpened():
+
+
         # 초당 프레임(FPS) 계산을 위해 현재 시간을 획득합니다.
         start_time = time.time()
         # 비디오 객체로부터 리턴 값(ret)과 영상(frame)을 가져옵니다.
@@ -125,9 +153,17 @@ def thread_cam():
                     momentum:       0번, 5번, 17번 랜드마크의 무게 중심 좌표값을 획득합니다.
                     event_val:      
                     """
-                    momentum, event_val, switch = refactoring_handmouse.calculate_loc_info(landmarks=segment)
+                    momentum, event_val, switch = handmouse.calculate_loc_info(landmarks=segment)
+                    #print(f'event_val({switch}): {event_val}')
+
+                    # x, y, sx, sy, h=int(512 * 0.15), w=int(512 * 0.15)
+
+                    tf_result = icon_in(momentum[0], momentum[1], 1630, 370)
+                    icon_control(tf_result, event_val)
+
+
+
         # 설정된 영상을 출력합니다. (Setup)
-        print(f'event_val: {event_val}', switch)
         if flag['momentum']:
             draw_point = tuple([int(momentum[0] * cam_width), int(momentum[1] * cam_height)])
             cv2.circle(img=frame, center=draw_point, radius=3, color=(255, 0, 0), thickness=3)
@@ -143,8 +179,23 @@ def thread_cam():
 
 def execute_event(event):
     import pyautogui
+
     if event == 'move':
-        pyautogui.moveTo()
+        pfd.move_event()
+    elif event == 'leftclick':
+        pfd.leftclick_event()
+    elif event == 'doubleclick':
+        pfd.doubleclick_event()
+    elif event == 'drag':
+        pfd.drag_event()
+    elif event == 'rightclick':
+        pfd.rightclick_event()
+    elif event == 'screenshow':
+        pfd.screenshot_event()
+    elif event == 'scroll':
+        pfd.scroll_event()
+    else:
+        pass
 
 
 
@@ -154,6 +205,8 @@ def main():
     # 화면 상에 띄워질 이미지 정의
 
     # 버튼
+    Btn0 = GUI('img/1_mouse_btn_img.png', xy=[1630, 100], size=0.15, on_top=True)
+    Btn0.hide()
     Btn1 = GUI('img/1_mouse_btn_img.png', xy=[1630, 370], size=0.15, on_top=True)
     # Btn1_2 = GUI('img/1_mouse_btn_img_2.png', xy=[1760, 380], size=0.1, on_top=True)
     Btn2 = GUI('img/2_painter_btn_img.png', xy=[1630, 470], size=0.15, on_top=True)
@@ -162,6 +215,7 @@ def main():
     # Btn3_2 = GUI('img/3_keyboard_btn_img_2.png', xy=[1760, 660], size=0.2, on_top=True)
     Btn4 = GUI('img/4_exit_btn_img_3.png', xy=[1630, 670], size=0.15, on_top=True)
     # Btn4_2 = GUI('img/4_exit_btn_img_2.png', xy=[1760, 810], size=0.2, on_top=True)
+
 
     # 외곽선(컨투어)
     Contour1 = GUI('img/green_contour.png', xy=[0, 0], size=1.0, on_top=True)
@@ -178,7 +232,7 @@ def main():
 
     ####################################################################################################################
     # 백엔드 모듈을 가져옵니다.
-    refactoring_handmouse.initialize()
+    handmouse.initialize()
 
     import pyautogui
     global screen_width, screen_height
@@ -189,6 +243,8 @@ def main():
 
     # 외부입력 카메라를 사용하기 위한 멀티스레드를 실행합니다.
     from threading import Thread
+    global switch
+
     thread_module_cam = Thread(target=thread_cam, name='thread_module_cam')
     thread_module_cam.daemon = True
     thread_module_cam.start()

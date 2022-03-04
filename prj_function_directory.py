@@ -2,6 +2,8 @@ import glob
 import numpy as np
 import pandas as pd
 from sklearn.utils import shuffle
+import pyautogui
+# from gui_app import GUI
 
 
 def reference_loc(x, y):
@@ -111,6 +113,50 @@ def split_evenly_df(path='./rawdata', name='integration', ref=False):
     final_df.reset_index(drop=True, inplace=True)
 
     return final_df
+
+# 캠 좌표 및 캠 내 마우스 조작 영역 좌표를 윈도우 좌표에 맞게 재설정한다.
+def convert_loc(win_h, win_w, x, y, cam_h=1, cam_w=1):
+    result_x = win_h * x / cam_h
+    result_y = win_w * y / cam_w
+
+    return result_x, result_y
+
+
+#이하 마우스 이벤트에 대한 function 함수
+
+def move_event(x, y):
+    pyautogui.moveTo(x, y)
+
+def leftclick_event(x, y):
+    pyautogui.leftClick(x, y)
+
+def rightclick_event(x, y):
+    pyautogui.rightClick(x, y)
+
+def doubleclick_event(x, y):
+    pyautogui.doubleClick(x, y)
+
+drag_flag, no_dup_drag  = False, True
+
+def drag_event(drag_flag):
+    global no_dup_drag #no duplicate drag - 마우스 업/다운이 중복 방지를 위한 flag
+    if drag_flag and no_dup_drag: #드래그 할 때 마우스 다운(버튼 누르기)
+        pyautogui.mouseDown()
+        no_dup_drag = False
+    elif not drag_flag and not no_dup_drag: #드래그 할 때 마우스 업(버튼 떼기)
+        pyautogui.mouseUp()
+        no_dup_drag = True
+
+def screenshot_event():
+    img_print = pyautogui.press('printscreen') #printscreen key 누름
+    img_print.show() #이미지 화면으로 띄움
+    return True
+
+def scroll_event(vector):
+    if vector <= -10: # 이동된 y 좌표가 -10 이하일때
+        pyautogui.scroll(-80)  # 스크롤 다운
+    elif vector >= 10:  # 이동된 y좌표가 10 이상일때
+        pyautogui.scroll(80)  # 스크롤 업
 
 # 캠 좌표 및 캠 내 마우스 조작 영역 좌표를 윈도우 좌표에 맞게 재설정한다.
 def convert_loc(win_h, win_w, x, y, cam_h=1, cam_w=1):
