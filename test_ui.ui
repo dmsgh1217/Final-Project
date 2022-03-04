@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1495</width>
+    <height>871</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>MainWindow</string>
+  </property>
+  <property name="windowOpacity">
+   <double>1.000000000000000</double>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <widget class="QPushButton" name="pushButton_2">
+    <property name="geometry">
+     <rect>
+      <x>1360</x>
+      <y>380</y>
+      <width>100</width>
+      <height>100</height>
+     </rect>
+    </property>
+    <property name="focusPolicy">
+     <enum>Qt::NoFocus</enum>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">QPushButton{
+border:0px;
+border-image: url(:/painter/2_painter_btn_img.png);
+padding:7px;
+}
+QPushButton:disabled{
+border-image: url(:/painter/2_painter_btn_img.png);
+}
+QPushButton:hover{
+border-image: url(:/painter/2_painter_btn_img_2.png);
+}
+QPushButton:pressed{
+border-image: url(:/painter/2_painter_btn_img_3.png);
+}
+
+
+
+
+</string>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="flat">
+     <bool>true</bool>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="pushButton_4">
+    <property name="geometry">
+     <rect>
+      <x>1360</x>
+      <y>640</y>
+      <width>100</width>
+      <height>100</height>
+     </rect>
+    </property>
+    <property name="focusPolicy">
+     <enum>Qt::NoFocus</enum>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">QPushButton{
+border:0px;
+border-image: url(:/exit/4_exit_btn_img.png);
+padding:7px;
+}
+QPushButton:disabled{
+border-image: url(:/exit/4_exit_btn_img.png);
+}
+QPushButton:hover{
+border-image:url(:/exit/4_exit_btn_img_2.png);
+}
+QPushButton:pressed{
+border-image:url(:/exit/4_exit_btn_img_3.png);
+}
+
+
+
+
+
+</string>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="flat">
+     <bool>true</bool>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="pushButton">
+    <property name="geometry">
+     <rect>
+      <x>1360</x>
+      <y>250</y>
+      <width>100</width>
+      <height>100</height>
+     </rect>
+    </property>
+    <property name="focusPolicy">
+     <enum>Qt::NoFocus</enum>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">QPushButton{
+border:0px;
+border-image: url(:/mouse_click/1_mouse_btn_img.png);
+padding:7px;
+}
+QPushButton:disabled{
+border-image: url(:/mouse_click/1_mouse_btn_img.png);
+}
+QPushButton:hover{
+border-image: url(:/mouse_click/1_mouse_btn_img_2.png);
+}
+QPushButton:pressed{
+border-image: url(:/mouse_click/1_mouse_btn_img_3.png);
+}
+</string>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="flat">
+     <bool>true</bool>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="pushButton_3">
+    <property name="geometry">
+     <rect>
+      <x>1360</x>
+      <y>510</y>
+      <width>100</width>
+      <height>100</height>
+     </rect>
+    </property>
+    <property name="focusPolicy">
+     <enum>Qt::NoFocus</enum>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">QPushButton{
+border:0px;
+border-image: url(:/keyboard/3_keyboard_btn_img.png);
+padding:7px;
+}
+QPushButton:disabled{
+border-image: url(:/keyboard/3_keyboard_btn_img.png);
+}
+QPushButton:hover{
+border-image:url(:/keyboard/3_keyboard_btn_img_2.png);
+}
+QPushButton:pressed{
+border-image: url(:/keyboard/3_keyboard_btn_img_3.png);
+}
+
+
+
+
+</string>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="flat">
+     <bool>true</bool>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label">
+    <property name="geometry">
+     <rect>
+      <x>50</x>
+      <y>40</y>
+      <width>1291</width>
+      <height>721</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="pixmap">
+     <pixmap>img/grad_contour_for_control_region.png</pixmap>
+    </property>
+   </widget>
+  </widget>
+ </widget>
+ <resources>
+  <include location="img/mouse.qrc"/>
+ </resources>
+ <connections/>
+</ui>
