@@ -1,0 +1,22 @@
+<RCC>
+  <qresource prefix="mouse_click">
+    <file>1_mouse_btn_img.png</file>
+    <file>1_mouse_btn_img_2.png</file>
+    <file>1_mouse_btn_img_3.png</file>
+  </qresource>
+  <qresource prefix="painter">
+    <file>2_painter_btn_img.png</file>
+    <file>2_painter_btn_img_2.png</file>
+    <file>2_painter_btn_img_3.png</file>
+  </qresource>
+  <qresource prefix="keyboard">
+    <file>3_keyboard_btn_img.png</file>
+    <file>3_keyboard_btn_img_2.png</file>
+    <file>3_keyboard_btn_img_3.png</file>
+  </qresource>
+  <qresource prefix="exit">
+    <file>4_exit_btn_img.png</file>
+    <file>4_exit_btn_img_2.png</file>
+    <file>4_exit_btn_img_3.png</file>
+  </qresource>
+</RCC>
