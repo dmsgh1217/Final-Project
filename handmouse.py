@@ -1,3 +1,7 @@
+# Release 1.4 by Min-chul
+# 스크린샷(Screenshot) 이벤트 처리시 중간에 다른 동작이 간섭하였을 때 "screenshot"으로 결과가 나오는 문제점 해결
+# 상기 문제 해결은 "Pause" 동작 해결과 동일 방법(call_count 계산)으로 해결하였음.
+
 # Release 1.3 by Min-chul
 # 리팩토링(Refactoring) 진행
 # 외부입력 카메라 관리(management) 및 opencv 라이브러리는 "gui_app.py"로 이관
@@ -23,7 +27,6 @@ import prj_function_directory as pfd
 
 model = None
 label = None
-resolution = {}
 result_asset = {}
 event_asset = {}
 flag_asset = {}
@@ -32,11 +35,15 @@ check_duplicate_queue = deque()
 
 
 def initialize(**kwargs):
-    global model, label, resolution, result_asset, event_asset, flag_asset
+    """
+    model_path
+    학습된 인공지능 모델 파일(.h5)의 디렉토리를 지정합니다.
+    encoder_path
+    학습에 사용된 데이터의 인코더 파일(.pickle)의 디렉토리를 지정합니다.
+    """
+    global model, label, result_asset, event_asset, flag_asset
     model_path = kwargs['model_path'] if 'model_path' in kwargs else './models/model_seq5_loc_angle(default).h5'
     encoder_path = kwargs['encoder_path'] if 'encoder_path' in kwargs else './resources/encoder_loc_angle_data_lbl_d56.pickle'
-    resolution['cam_width'] = kwargs['cam_width'] if 'cam_width' in kwargs else 1280
-    resolution['cam_height'] = kwargs['cam_height'] if 'cam_height' in kwargs else 720
 
     # 현재 작업중인 디렉토리에 "screenshot" 디렉토리가 없는 경우, 디렉토리를 생성합니다.
     os.makedirs('screenshot', exist_ok=True)
@@ -208,7 +215,7 @@ def _thread_right_click():
 
 
 def _thread_screenshot():
-    global flag_asset, event_asset
+    global flag_asset, event_asset, call_count
     while True:
         if flag_asset['screen_trigger'] and not flag_asset['screen_run']:
             # 스크린샷(screenshot) 이벤트 처리를 위한 멀티스레드를 동작중(True)으로 명시합니다.
@@ -228,10 +235,12 @@ def _thread_screenshot():
                     break
                 time.sleep(0.01)
             # 상태 변화 횟수가 0이면 제한 시간내에 계속해서 "Screenshot"상태를 유지하고 있는것으로 간주합니다.
-            if status_count == 0:
+            print(f'call_count(in screenshot): {call_count}')
+            if status_count == 0 and call_count >= 6:
                 event_asset['event'] = 'screenshot'
             else:
                 event_asset['event'] = 'default'
+            call_count = 0
             # 스레드 내부 실행이 종료되었으므로, 부분 동작 처리를 활성화 할 수 있도록 flag_asset['screen_trigger']를 "False"로 변경합니다.
             flag_asset['screen_trigger'] = False
             # 스레드 내부 실행이 종료되었으므로, flag_asset['screen_run'] 변수를 "False"로 변경하여 비활성화 상태임을 명시합니다.
@@ -271,15 +280,12 @@ def _thread_pause():
             # 상태 변화 횟수가 0이면 제한 시간내에 계속해서 "Pause"상태를 유지하고 있는것으로 간주합니다.
             if status_count == 0:
                 if event_asset['switch']:
-                    if call_count >= 15:
+                    if call_count >= 5:
                         event_asset['switch'] = False
-                        call_count = 0
                 else:
-                    if call_count >= 30:
+                    if call_count >= 10:
                         event_asset['switch'] = True
-                        call_count = 0
-                # 즉시 해제가 불가능 하도록 일정 시간동안 딜레이를 지정합니다.
-                # time.sleep(1)
+            call_count = 0
             # 스레드 내부 실행이 종료되었으므로, 부분 동작 처리를 활성화 할 수 있도록 flag_asset['pause_trigger']를 "False"로 변경합니다.
             flag_asset['pause_trigger'] = False
             # 스레드 내부 실행이 종료되었으므로, flag_asset['pause_run'] 변수를 "False"로 변경하여 비활성화 상태임을 명시합니다.
