@@ -159,17 +159,17 @@ def scroll_event(vector):
         pyautogui.scroll(80)  # 스크롤 업
 
 # 캠 좌표 및 캠 내 마우스 조작 영역 좌표를 윈도우 좌표에 맞게 재설정한다.
-def convert_loc(win_h, win_w, x, y, cam_h=1, cam_w=1):
-    result_x = win_h * x / cam_h
-    result_y = win_w * y / cam_w
+def convert_loc(xy, win_xy, cam_xy, margin):
+    result_x = np.interp(xy[0], (margin, cam_xy[0] - margin), (0, win_xy[0]))
+    result_y = np.interp(xy[1], (margin, cam_xy[1] - margin), (0, win_xy[1]))
 
-    return result_x, result_y
+    return (result_x, result_y)
 
 # 아이콘 크기 512 * 512  0.15
 # x나 y 둘중 하나라도 아이콘 영역을 벗어나면 False를 준다.
-def icon_in(x, y, sx, sy, h=int(512*0.15), w=int(512*0.15)):
+def region_in(xy, start_xy, end_xy):
     result = True
-    if sx > x or sx + h < x: result = False
-    if sy > x or sy + w < y: result = False
+    if start_xy[0] > xy[0] or start_xy[0] + end_xy[0] < xy[0]: result = False
+    if start_xy[1] > xy[1] or start_xy[1] + end_xy[1] < xy[1]: result = False
 
     return result
