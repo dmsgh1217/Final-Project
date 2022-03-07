@@ -5,6 +5,9 @@ import prj_function_directory as pfd
 import handmouse
 import cv2
 
+from PIL import ImageGrab
+from datetime import datetime
+
 draw_point = (0, 0) #중심좌표(momentum) draw point
 cam_width, cam_height = 1280, 720
 margin = 175
@@ -19,6 +22,7 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
         self.MainWindow = MainWindow
         self.localPos = None
         self.setupUi(self.MainWindow)
+
 
     def setupUi(self, MainWindow):
         self.MainWindow.setObjectName("MainWindow")
@@ -36,10 +40,10 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
         self.MainWindow.setAttribute(QtCore.Qt.WA_TranslucentBackground, True)
 
         self.centralwidget.setObjectName("centralwidget")
-        self.btn_set('img/2_painter_btn_img', [1360, 380, 100, 100], 'pushButton_2')
-        self.btn_set('img/4_exit_btn_img', [1360, 640, 100, 100], 'pushButton_4')
+        self.btn_set_2('img/2_painter_btn_img', [1360, 380, 100, 100], 'pushButton_2')
+        self.btn_set_3('img/4_exit_btn_img', [1360, 640, 100, 100], 'pushButton_4')
         self.btn_set('img/1_mouse_btn_img', [1360, 250, 100, 100], 'pushButton')
-        self.btn_set('img/3_keyboard_btn_img', [1360, 510, 100, 100], 'pushButton_3')
+        self.btn_set_4('img/3_keyboard_btn_img', [1360, 510, 100, 100], 'pushButton_3')
 
         self.label = QtWidgets.QLabel(self.centralwidget)
         self.label.setGeometry(QtCore.QRect(50, 40, 1291, 721))
@@ -55,6 +59,28 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
         self.pushButton.setGeometry(QtCore.QRect(xy[0], xy[1], xy[2], xy[3]))
         self.pushButton.setFocusPolicy(QtCore.Qt.NoFocus)
         self.pushButton.setStyleSheet("QPushButton{\n"
+                                      "border:0px;\n"
+                                      f"border-image: url(./{path}.png);\n"
+                                      "padding:7px;\n"
+                                      "}\n"
+                                      "QPushButton:disabled{\n"
+                                      f"border-image: url(./{path}.png);\n"
+                                      "}\n"
+                                      "QPushButton:hover{\n"
+                                      f"border-image: url(./{path}_2.png);\n"
+                                      "}\n"
+                                      "QPushButton:pressed{\n"
+                                      f"border-image: url(./{path}_3.png);\n"
+                                      "}")
+        self.pushButton.setText("")
+        self.pushButton.setFlat(True)
+        self.pushButton.setObjectName(name)
+
+    def btn_set_2(self, path, xy, name):
+        self.pushButton_2 = QtWidgets.QPushButton(self.centralwidget)
+        self.pushButton_2.setGeometry(QtCore.QRect(xy[0], xy[1], xy[2], xy[3]))
+        self.pushButton_2.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.pushButton_2.setStyleSheet("QPushButton{\n"
                                         "border:0px;\n"
                                         f"border-image: url(./{path}.png);\n"
                                         "padding:7px;\n"
@@ -68,17 +94,78 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
                                         "QPushButton:pressed{\n"
                                         f"border-image: url(./{path}_3.png);\n"
                                         "}")
-        self.pushButton.setText("")
-        self.pushButton.setFlat(True)
-        self.pushButton.setObjectName(name)
+        self.pushButton_2.setText("")
+        self.pushButton_2.setFlat(True)
+        self.pushButton_2.setObjectName(name)
+
+    def btn_set_3(self, path, xy, name):
+        self.pushButton_3 = QtWidgets.QPushButton(self.centralwidget)
+        self.pushButton_3.setGeometry(QtCore.QRect(xy[0], xy[1], xy[2], xy[3]))
+        self.pushButton_3.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.pushButton_3.setStyleSheet("QPushButton{\n"
+                                        "border:0px;\n"
+                                        f"border-image: url(./{path}.png);\n"
+                                        "padding:7px;\n"
+                                        "}\n"
+                                        "QPushButton:disabled{\n"
+                                        f"border-image: url(./{path}.png);\n"
+                                        "}\n"
+                                        "QPushButton:hover{\n"
+                                        f"border-image: url(./{path}_2.png);\n"
+                                        "}\n"
+                                        "QPushButton:pressed{\n"
+                                        f"border-image: url(./{path}_3.png);\n"
+                                        "}")
+        self.pushButton_3.setText("")
+        self.pushButton_3.setFlat(True)
+        self.pushButton_3.setObjectName(name)
+
+    def btn_set_4(self, path, xy, name):
+        self.pushButton_4 = QtWidgets.QPushButton(self.centralwidget)
+        self.pushButton_4.setGeometry(QtCore.QRect(xy[0], xy[1], xy[2], xy[3]))
+        self.pushButton_4.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.pushButton_4.setStyleSheet("QPushButton{\n"
+                                        "border:0px;\n"
+                                        f"border-image: url(./{path}.png);\n"
+                                        "padding:7px;\n"
+                                        "}\n"
+                                        "QPushButton:disabled{\n"
+                                        f"border-image: url(./{path}.png);\n"
+                                        "}\n"
+                                        "QPushButton:hover{\n"
+                                        f"border-image: url(./{path}_2.png);\n"
+                                        "}\n"
+                                        "QPushButton:pressed{\n"
+                                        f"border-image: url(./{path}_3.png);\n"
+                                        "}")
+        self.pushButton_4.setText("")
+        self.pushButton_4.setFlat(True)
+        self.pushButton_4.setObjectName(name)
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
         self.MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
 
+    def btn_controller(self, btn_status):
+        if btn_status:
+            # self.pushButton.show()
+            # self.pushButton_2.show()
+            # self.pushButton_3.show()
+            # self.pushButton_4.show()
+            # self.label.show()
+            self.MainWindow.show()
+        else:
+            # self.pushButton.hide()
+            # self.pushButton_2.hide()
+            # self.pushButton_3.hide()
+            # self.pushButton_4.hide()
+            # self.label.hide()
+            self.MainWindow.hide()
+        print(self.pushButton.isVisible(), self.pushButton_2.isVisible(), self.pushButton_3.isVisible(), self.pushButton_4.isVisible(), self.label.isVisible())
+
 
 def thread_cam():
-    global execute_flag, execute_parameter, draw_point, clocX, clocY, plocX, plocY
+    global execute_flag, execute_parameter, draw_point, clocX, clocY, plocX, plocY, execute_flag
     # 미디어파이프 라이브러리에서 제공하는 함수를 사용하기 위한 객체를 생성합니다.
     import mediapipe as mp
     mp_hands = mp.solutions.hands
@@ -97,8 +184,6 @@ def thread_cam():
     cap = cv2.VideoCapture(0)
 
     while cap.isOpened():
-        # 초당 프레임(FPS) 계산을 위해 현재 시간을 획득합니다.
-        start_time = time.time()
         # 비디오 객체로부터 리턴 값(ret)과 영상(frame)을 가져옵니다.
         ret, frame = cap.read()
         # 영상을 좌우 반전하여 출력합니다.
@@ -142,11 +227,11 @@ def thread_cam():
                     momentum:       0번, 5번, 17번 랜드마크의 무게 중심 좌표값을 획득합니다.
                     event_val:
                     """
-                    momentum, event_val, switch = handmouse.calculate_loc_info(landmarks=segment)
-                    if event_val != 'default':
+                    if not run_flag:
+                        momentum, event_val, switch = handmouse.calculate_loc_info(landmarks=segment)
                         print(f'event_val({switch}): {event_val}')
-                    execute_parameter = [momentum, event_val, screen_width, screen_height]
-                    execute_flag = True
+                        execute_parameter = [momentum, event_val, screen_width, screen_height]
+                        execute_flag = True
 
                     # tf_result = icon_in(momentum[0], momentum[1], 1630, 370)
                     # icon_control(tf_result, event_val)
@@ -167,14 +252,19 @@ def thread_cam():
         # "Q"버튼을 누르면 프로세스를 종료합니다.
         if cv2.waitKey(1) == ord('q'):
             cap.release()
-            cv2.destroyAllWindows()
-            exit()
+            break
+    cv2.destroyAllWindows()
+
+
+plocX, plocY = clocX, clocY
+
 
 def thread_execute_event():
-    global execute_flag, plocX, plocY, clocX, clocY
+    global execute_flag, plocX, plocY, clocX, clocY, run_flag
     while True:
         if execute_flag:
             execute_flag = False
+            run_flag = True
             event = execute_parameter[1]
             # 좌표 변환
             xy = (draw_point[0], draw_point[1])
@@ -182,29 +272,36 @@ def thread_execute_event():
             cam_xy = [cam_width, cam_height]
             loc_x, loc_y = pfd.convert_loc(xy, win_xy, cam_xy, margin)
 
-            if event == 'move' or event == 'default':
-                pfd.move_event(loc_x, loc_y)
-            elif event == 'defalut':
-                pfd.drag_event(no_dup_drag = False)
-            elif event == 'leftclick':
-                pfd.leftclick_event(loc_x, loc_y)
-            elif event == 'doubleclick':
-                pfd.doubleclick_event(loc_x, loc_y)
-                print(event, 'doubleclick!')
-            elif event == 'drag':
-                pfd.drag_event(no_dup_drag = True)
-                print(event, 'drag!')
-            elif event == 'rightclick':
-                pfd.rightclick_event(loc_x, loc_y)
-                print(event, 'rightclick!')
-            elif event == 'screenshot':
-                pfd.screenshot_event()
-                print(event, 'screenshot!')
-            elif event == 'scroll':
-                pfd.scroll_event(clocY - plocY)
-                print(event, 'scroll!')
-            else:
-                pass
+            try:
+                if event == 'move' or event == 'default':
+                    pfd.move_event(loc_x, loc_y)
+                    pfd.drag_event(drag_flag=False)
+                elif event == 'leftclick':
+                    pfd.leftclick_event(loc_x, loc_y)
+                elif event == 'doubleclick':
+                    pfd.doubleclick_event(loc_x, loc_y)
+                    print(event, 'doubleclick!')
+                elif event == 'drag':
+                    pfd.drag_event(drag_flag=True)
+                    print(event, 'drag!')
+                elif event == 'rightclick':
+                    pfd.rightclick_event(loc_x, loc_y)
+                    print(event, 'rightclick!')
+                elif event == 'screenshot':
+                    ui.btn_controller(btn_status=False)
+                    time.sleep(0.5)
+                    pfd.screenshot_event()
+                    time.sleep(0.5)
+                    ui.btn_controller(btn_status=True)
+                elif event == 'scroll':
+                    pfd.scroll_event(clocY - plocY)
+                    print(event, 'scroll!')
+                else:
+                    pass
+            except Exception as E:
+                print(f'Error occurred.. {E}')
+            finally:
+                run_flag = False
         plocX, plocY = clocX, clocY
         time.sleep(0.01)
 
@@ -221,6 +318,10 @@ if __name__ == "__main__":
     # 백엔드 모듈을 가져옵니다.
     handmouse.initialize()
 
+    # 스크린샷을 저장할 디렉토리를 생성합니다. (이미 있는경우 무시합니다.)
+    import os
+    os.makedirs('./screenshot_img', exist_ok=True)
+
     import pyautogui
     global screen_width, screen_height
     screen_width, screen_height = pyautogui.size()
@@ -231,6 +332,7 @@ if __name__ == "__main__":
 
     # th_execute_event 에서 사용할 플래그 변수, 파라미터를 선언합니다.
     execute_flag = False
+    run_flag = False
     execute_parameter = []
 
     th_module_cam = Thread(target=thread_cam, name='th_module_cam')
@@ -239,6 +341,7 @@ if __name__ == "__main__":
     th_execute_event = Thread(target=thread_execute_event, name='th_execute_event')
     th_execute_event.daemon = True
     th_execute_event.start()
+    print(pyautogui.size())
     ####################################################################################################################
     sys.exit(app.exec_())
 
