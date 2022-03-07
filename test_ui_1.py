@@ -7,7 +7,6 @@ import prj_function_directory as pfd
 import handmouse
 import cv2
 
-
 class Ui_MainWindow(QtWidgets.QMainWindow):
     def __init__(self, Mainwindow, on_top=True):
         super(Ui_MainWindow, self).__init__()
@@ -32,90 +31,11 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
         self.MainWindow.setAttribute(QtCore.Qt.WA_TranslucentBackground, True)
 
         self.centralwidget.setObjectName("centralwidget")
-        self.pushButton_2 = QtWidgets.QPushButton(self.centralwidget)
-        self.pushButton_2.setGeometry(QtCore.QRect(1360, 380, 100, 100))
-        self.pushButton_2.setFocusPolicy(QtCore.Qt.NoFocus)
-        self.pushButton_2.setStyleSheet("QPushButton{\n"
-"border:0px;\n"
-"border-image: url(./img/2_painter_btn_img.png);\n"
-"padding:7px;\n"
-"}\n"
-"QPushButton:disabled{\n"
-"border-image: url(./img/2_painter_btn_img.png);\n"
-"}\n"
-"QPushButton:hover{\n"
-"border-image: url(./img/2_painter_btn_img_2.png);\n"
-"}\n"
-"QPushButton:pressed{\n"
-"border-image: url(./img/2_painter_btn_img_3.png);\n"
-"}"
-"")
-        self.pushButton_2.setText("")
-        self.pushButton_2.setFlat(True)
-        self.pushButton_2.setObjectName("pushButton_2")
-        self.pushButton_4 = QtWidgets.QPushButton(self.centralwidget)
-        self.pushButton_4.setGeometry(QtCore.QRect(1360, 640, 100, 100))
-        self.pushButton_4.setFocusPolicy(QtCore.Qt.NoFocus)
-        self.pushButton_4.setStyleSheet("QPushButton{\n"
-"border:0px;\n"
-"border-image: url(./img/4_exit_btn_img.png);\n"
-"padding:7px;\n"
-"}\n"
-"QPushButton:disabled{\n"
-"border-image: url(./img/4_exit_btn_img.png);\n"
-"}\n"
-"QPushButton:hover{\n"
-"border-image:url(./img/4_exit_btn_img_2.png);\n"
-"}\n"
-"QPushButton:pressed{\n"
-"border-image:url(./img/4_exit_btn_img_3.png);\n"
-"}"
-"")
-        self.pushButton_4.setText("")
-        self.pushButton_4.setFlat(True)
-        self.pushButton_4.setObjectName("pushButton_4")
-        self.pushButton = QtWidgets.QPushButton(self.centralwidget)
-        self.pushButton.setGeometry(QtCore.QRect(1360, 250, 100, 100))
-        self.pushButton.setFocusPolicy(QtCore.Qt.NoFocus)
-        self.pushButton.setStyleSheet("QPushButton{\n"
-"border:0px;\n"
-"border-image: url(./img/1_mouse_btn_img.png);\n"
-"padding:7px;\n"
-"}\n"
-"QPushButton:disabled{\n"
-"border-image: url(./img/1_mouse_btn_img.png);\n"
-"}\n"
-"QPushButton:hover{\n"
-"border-image: url(./img/1_mouse_btn_img_2.png);\n"
-"}\n"
-"QPushButton:pressed{\n"
-"border-image: url(./img/1_mouse_btn_img_3.png);\n"
-"}"
-"")
-        self.pushButton.setText("")
-        self.pushButton.setFlat(True)
-        self.pushButton.setObjectName("pushButton")
-        self.pushButton_3 = QtWidgets.QPushButton(self.centralwidget)
-        self.pushButton_3.setGeometry(QtCore.QRect(1360, 510, 100, 100))
-        self.pushButton_3.setFocusPolicy(QtCore.Qt.NoFocus)
-        self.pushButton_3.setStyleSheet("QPushButton{\n"
-"border:0px;\n"
-"border-image: url(./img/3_keyboard_btn_img.png);\n"
-"padding:7px;\n"
-"}\n"
-"QPushButton:disabled{\n"
-"border-image: url(./img/3_keyboard_btn_img.png);\n"
-"}\n"
-"QPushButton:hover{\n"
-"border-image:url(./img/3_keyboard_btn_img_2.png);\n"
-"}\n"
-"QPushButton:pressed{\n"
-"border-image: url(./img/3_keyboard_btn_img_3.png);\n"
-"}"
-"")
-        self.pushButton_3.setText("")
-        self.pushButton_3.setFlat(True)
-        self.pushButton_3.setObjectName("pushButton_3")
+        self.btn_set('img/2_painter_btn_img', [1360, 380, 100, 100], 'pushButton_2')
+        self.btn_set('img/4_exit_btn_img', [1360, 640, 100, 100], 'pushButton_4')
+        self.btn_set('img/1_mouse_btn_img', [1360, 250, 100, 100], 'pushButton')
+        self.btn_set('img/3_keyboard_btn_img', [1360, 510, 100, 100], 'pushButton_3')
+
         self.label = QtWidgets.QLabel(self.centralwidget)
         self.label.setGeometry(QtCore.QRect(50, 40, 1291, 721))
         self.label.setText("")
@@ -125,6 +45,28 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
 
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
+
+    def btn_set(self, path, xy, name):
+        self.pushButton = QtWidgets.QPushButton(self.centralwidget)
+        self.pushButton.setGeometry(QtCore.QRect(xy[0], xy[1], xy[2], xy[3]))
+        self.pushButton.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.pushButton.setStyleSheet("QPushButton{\n"
+                                        "border:0px;\n"
+                                        f"border-image: url(./{path}.png);\n"
+                                        "padding:7px;\n"
+                                        "}\n"
+                                        "QPushButton:disabled{\n"
+                                        f"border-image: url(./{path}.png);\n"
+                                        "}\n"
+                                        "QPushButton:hover{\n"
+                                        f"border-image: url(./{path}_2.png);\n"
+                                        "}\n"
+                                        "QPushButton:pressed{\n"
+                                        f"border-image: url(./{path}_3.png);\n"
+                                        "}")
+        self.pushButton.setText("")
+        self.pushButton.setFlat(True)
+        self.pushButton.setObjectName(name)
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
@@ -145,7 +87,7 @@ def thread_cam():
     # 랜드마크의 무게 중심 좌표값을 저장하는 변수를 초기화합니다.
     momentum = (0, 0)
     # 외부입력 카메라의 해상도 값을 다음과 같은 크기로 설정합니다.
-    cam_width, cam_height = 1440, 810 #FULL HD의 75% 사이즈
+    cam_width, cam_height = 1280, 720
     # OpenCV 라이브러리를 이용하여 비디오 객체를 생성합니다.
     cap = cv2.VideoCapture(0)
 
@@ -155,9 +97,9 @@ def thread_cam():
         # 비디오 객체로부터 리턴 값(ret)과 영상(frame)을 가져옵니다.
         ret, frame = cap.read()
         # 영상을 좌우 반전하여 출력합니다.
-        frame = cv2.flip(src=frame, flipCode=1)
+        frame = cv2.flip(frame, 1)
         # 영상의 출력되는 사이즈를 조절합니다.
-        frame = cv2.resize(src=frame, dsize=(cam_width, cam_height), interpolation=cv2.INTER_AREA)
+        frame = cv2.resize(frame, (cam_width, cam_height), interpolation=cv2.INTER_LINEAR)
         # 영상의 채널을 BGR 채널에서 RGB 채널로 변환합니다.
         frame = cv2.cvtColor(src=frame, code=cv2.COLOR_BGR2RGB)
         # 미디어파이프(mediapipe)의 함수에 현재 영상 정보를 입력으로 한 결과(return)를 받습니다.
@@ -193,7 +135,7 @@ def thread_cam():
                 if not none_flag:
                     """
                     momentum:       0번, 5번, 17번 랜드마크의 무게 중심 좌표값을 획득합니다.
-                    event_val:      
+                    event_val:
                     """
                     momentum, event_val, switch = handmouse.calculate_loc_info(landmarks=segment)
                     print(f'event_val({switch}): {event_val}')
@@ -212,7 +154,7 @@ def thread_cam():
         cv2.imshow('frame', frame)
         cv2.moveWindow(winname='frame', x=int((screen_width / 2) - (cam_width / 2)), y=int((screen_height / 2) - (cam_height / 2)))
 
-        # execute_event(event_val)
+        execute_event(event_val, momentum, screen_width, screen_height)
 
         # "Q"버튼을 누르면 프로세스를 종료합니다.
         if cv2.waitKey(1) == ord('q'):
@@ -221,24 +163,41 @@ def thread_cam():
             exit()
 
 
-#
-# def execute_event(event):
-#     if event == 'move':
-#         pfd.move_event()
-#     elif event == 'leftclick':
-#         pfd.leftclick_event()
-#     elif event == 'doubleclick':
-#         pfd.doubleclick_event()
-#     elif event == 'drag':
-#         pfd.drag_event()
-#     elif event == 'rightclick':
-#         pfd.rightclick_event()
-#     elif event == 'screenshow':
-#         pfd.screenshot_event()
-#     elif event == 'scroll':
-#         pfd.scroll_event()
-#     else:
-#         pass
+def execute_event(event, xy, win_x, win_y):
+    x, y = pfd.convert_loc(win_x, win_y, xy[0], xy[1])
+    #변수 바깥?...
+
+    if event == 'move':
+        pfd.move_event(x, y) #aivirtualmouse 내 코드 참조
+        # #        # 6. Smoothen Values
+        # clocX = plocX + (x3 - plocX) / smoothening
+        # clocY = plocY + (y3 - plocY) / smoothening
+        #
+        # # 7. Move Mouse
+        # autopy.mouse.move(wScr - clocX, clocY)
+        # cv2.circle(img, (x1, y1), 15, (255, 0, 255), cv2.FILLED)
+        # plocX, plocY = clocX, clocY
+
+    elif event == 'leftclick':
+        pfd.leftclick_event(x, y)
+    elif event == 'doubleclick':
+        print(event)
+        # pfd.doubleclick_event()
+    elif event == 'drag':
+        print(event)
+        # pfd.drag_event()
+    elif event == 'rightclick':
+        print(event)
+        # pfd.rightclick_event()
+    elif event == 'screenshow':
+        print(event)
+        # pfd.screenshot_event()
+    elif event == 'scroll':
+        print(event)
+        # pfd.scroll_event()
+    else:
+        # pfd.move_event(x, y)
+        pass
 
 
 if __name__ == "__main__":
@@ -265,7 +224,5 @@ if __name__ == "__main__":
     thread_module_cam.daemon = True
     thread_module_cam.start()
     ####################################################################################################################
-
-
     sys.exit(app.exec_())
 
