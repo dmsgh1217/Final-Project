@@ -1,11 +1,16 @@
-import sys
 import time
 import numpy as np
-
 from PyQt5 import QtCore, QtGui, QtWidgets
 import prj_function_directory as pfd
 import handmouse
 import cv2
+
+draw_point = (0, 0) #중심좌표(momentum) draw point
+cam_width, cam_height = 1280, 720
+margin = 175
+smoothening = 5
+plocX, plocY = 0, 0
+clocX, clocY = 0, 0
 
 class Ui_MainWindow(QtWidgets.QMainWindow):
     def __init__(self, Mainwindow, on_top=True):
@@ -38,7 +43,6 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
 
         self.label = QtWidgets.QLabel(self.centralwidget)
         self.label.setGeometry(QtCore.QRect(50, 40, 1291, 721))
-        self.label.setText("")
         self.label.setPixmap(QtGui.QPixmap("img/grad_contour_for_control_region.png"))
         self.label.setObjectName("label")
         self.MainWindow.setCentralWidget(self.centralwidget)
@@ -74,7 +78,7 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
 
 
 def thread_cam():
-    global execute_flag, execute_parameter
+    global execute_flag, execute_parameter, draw_point, clocX, clocY, plocX, plocY
     # 미디어파이프 라이브러리에서 제공하는 함수를 사용하기 위한 객체를 생성합니다.
     import mediapipe as mp
     mp_hands = mp.solutions.hands
@@ -144,16 +148,18 @@ def thread_cam():
                     execute_parameter = [momentum, event_val, screen_width, screen_height]
                     execute_flag = True
 
-                    # x, y, sx, sy, h=int(512 * 0.15), w=int(512 * 0.15)
-
                     # tf_result = icon_in(momentum[0], momentum[1], 1630, 370)
                     # icon_control(tf_result, event_val)
-
 
         # 설정된 영상을 출력합니다. (Setup)
         if flag['momentum']:
             draw_point = tuple([int(momentum[0] * cam_width), int(momentum[1] * cam_height)])
             cv2.circle(img=frame, center=draw_point, radius=3, color=(255, 0, 0), thickness=3)
+
+        cv2.rectangle(frame, (margin, margin), (cam_width - margin, cam_height - margin), (255, 0, 255), 2)
+
+        clocX = plocX + (draw_point[0] - plocX) / smoothening
+        clocY = plocY + (draw_point[1] - plocY) / smoothening
 
         cv2.imshow('frame', frame)
         cv2.moveWindow(winname='frame', x=int((screen_width / 2) - (cam_width / 2)), y=int((screen_height / 2) - (cam_height / 2)))
@@ -164,32 +170,42 @@ def thread_cam():
             cv2.destroyAllWindows()
             exit()
 
-
 def thread_execute_event():
-    global execute_flag
+    global execute_flag, plocX, plocY, clocX, clocY
     while True:
         if execute_flag:
             execute_flag = False
             event = execute_parameter[1]
             # 좌표 변환
-            win_x, win_y = execute_parameter[2], execute_parameter[3]
-            loc_x, loc_y = pfd.convert_loc(win_w=win_x, win_h=win_y, x=execute_parameter[0][0], y=execute_parameter[0][1])
+            xy = (draw_point[0], draw_point[1])
+            win_xy = [execute_parameter[2], execute_parameter[3]]
+            cam_xy = [cam_width, cam_height]
+            loc_x, loc_y = pfd.convert_loc(xy, win_xy, cam_xy, margin)
+
             if event == 'move' or event == 'default':
                 pfd.move_event(loc_x, loc_y)
+            elif event == 'defalut':
+                pfd.drag_event(no_dup_drag = False)
             elif event == 'leftclick':
                 pfd.leftclick_event(loc_x, loc_y)
             elif event == 'doubleclick':
+                pfd.doubleclick_event(loc_x, loc_y)
                 print(event, 'doubleclick!')
             elif event == 'drag':
+                pfd.drag_event(no_dup_drag = True)
                 print(event, 'drag!')
             elif event == 'rightclick':
+                pfd.rightclick_event(loc_x, loc_y)
                 print(event, 'rightclick!')
             elif event == 'screenshot':
+                pfd.screenshot_event()
                 print(event, 'screenshot!')
             elif event == 'scroll':
+                pfd.scroll_event(clocY - plocY)
                 print(event, 'scroll!')
             else:
                 pass
+        plocX, plocY = clocX, clocY
         time.sleep(0.01)
 
 
