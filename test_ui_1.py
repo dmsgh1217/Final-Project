@@ -74,6 +74,7 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
 
 
 def thread_cam():
+    global execute_flag, execute_parameter
     # 미디어파이프 라이브러리에서 제공하는 함수를 사용하기 위한 객체를 생성합니다.
     import mediapipe as mp
     mp_hands = mp.solutions.hands
@@ -85,7 +86,7 @@ def thread_cam():
     # 이벤트 값을 저장하는 변수를 초기화합니다.
     event_val = 'default'
     # 랜드마크의 무게 중심 좌표값을 저장하는 변수를 초기화합니다.
-    momentum = (0, 0)
+    momentum = [.0, .0]
     # 외부입력 카메라의 해상도 값을 다음과 같은 크기로 설정합니다.
     cam_width, cam_height = 1280, 720
     # OpenCV 라이브러리를 이용하여 비디오 객체를 생성합니다.
@@ -138,7 +139,10 @@ def thread_cam():
                     event_val:
                     """
                     momentum, event_val, switch = handmouse.calculate_loc_info(landmarks=segment)
-                    print(f'event_val({switch}): {event_val}')
+                    if event_val != 'default':
+                        print(f'event_val({switch}): {event_val}')
+                    execute_parameter = [momentum, event_val, screen_width, screen_height]
+                    execute_flag = True
 
                     # x, y, sx, sy, h=int(512 * 0.15), w=int(512 * 0.15)
 
@@ -154,8 +158,6 @@ def thread_cam():
         cv2.imshow('frame', frame)
         cv2.moveWindow(winname='frame', x=int((screen_width / 2) - (cam_width / 2)), y=int((screen_height / 2) - (cam_height / 2)))
 
-        execute_event(event_val, momentum, screen_width, screen_height)
-
         # "Q"버튼을 누르면 프로세스를 종료합니다.
         if cv2.waitKey(1) == ord('q'):
             cap.release()
@@ -163,41 +165,32 @@ def thread_cam():
             exit()
 
 
-def execute_event(event, xy, win_x, win_y):
-    x, y = pfd.convert_loc(win_x, win_y, xy[0], xy[1])
-    #변수 바깥?...
-
-    if event == 'move':
-        pfd.move_event(x, y) #aivirtualmouse 내 코드 참조
-        # #        # 6. Smoothen Values
-        # clocX = plocX + (x3 - plocX) / smoothening
-        # clocY = plocY + (y3 - plocY) / smoothening
-        #
-        # # 7. Move Mouse
-        # autopy.mouse.move(wScr - clocX, clocY)
-        # cv2.circle(img, (x1, y1), 15, (255, 0, 255), cv2.FILLED)
-        # plocX, plocY = clocX, clocY
-
-    elif event == 'leftclick':
-        pfd.leftclick_event(x, y)
-    elif event == 'doubleclick':
-        print(event)
-        # pfd.doubleclick_event()
-    elif event == 'drag':
-        print(event)
-        # pfd.drag_event()
-    elif event == 'rightclick':
-        print(event)
-        # pfd.rightclick_event()
-    elif event == 'screenshow':
-        print(event)
-        # pfd.screenshot_event()
-    elif event == 'scroll':
-        print(event)
-        # pfd.scroll_event()
-    else:
-        # pfd.move_event(x, y)
-        pass
+def thread_execute_event():
+    global execute_flag
+    while True:
+        if execute_flag:
+            execute_flag = False
+            event = execute_parameter[1]
+            # 좌표 변환
+            win_x, win_y = execute_parameter[2], execute_parameter[3]
+            loc_x, loc_y = pfd.convert_loc(win_w=win_x, win_h=win_y, x=execute_parameter[0][0], y=execute_parameter[0][1])
+            if event == 'move' or event == 'default':
+                pfd.move_event(loc_x, loc_y)
+            elif event == 'leftclick':
+                pfd.leftclick_event(loc_x, loc_y)
+            elif event == 'doubleclick':
+                print(event, 'doubleclick!')
+            elif event == 'drag':
+                print(event, 'drag!')
+            elif event == 'rightclick':
+                print(event, 'rightclick!')
+            elif event == 'screenshot':
+                print(event, 'screenshot!')
+            elif event == 'scroll':
+                print(event, 'scroll!')
+            else:
+                pass
+        time.sleep(0.01)
 
 
 if __name__ == "__main__":
@@ -220,9 +213,16 @@ if __name__ == "__main__":
     from threading import Thread
     global switch
 
-    thread_module_cam = Thread(target=thread_cam, name='thread_module_cam')
-    thread_module_cam.daemon = True
-    thread_module_cam.start()
+    # th_execute_event 에서 사용할 플래그 변수, 파라미터를 선언합니다.
+    execute_flag = False
+    execute_parameter = []
+
+    th_module_cam = Thread(target=thread_cam, name='th_module_cam')
+    th_module_cam.daemon = True
+    th_module_cam.start()
+    th_execute_event = Thread(target=thread_execute_event, name='th_execute_event')
+    th_execute_event.daemon = True
+    th_execute_event.start()
     ####################################################################################################################
     sys.exit(app.exec_())
 
