@@ -16,7 +16,15 @@
   <property name="windowOpacity">
    <double>1.000000000000000</double>
   </property>
+  <property name="styleSheet">
+   <string notr="true">background: transparent
+</string>
+  </property>
   <widget class="QWidget" name="centralwidget">
+   <property name="styleSheet">
+    <string notr="true">background: transparent
+</string>
+   </property>
    <widget class="QPushButton" name="pushButton_2">
     <property name="geometry">
      <rect>
