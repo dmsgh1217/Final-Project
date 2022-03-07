@@ -1,3 +1,4 @@
+from datetime import datetime
 import glob
 import numpy as np
 import pandas as pd
@@ -122,6 +123,7 @@ def move_event(x, y):
 
 def leftclick_event(x, y):
     pyautogui.leftClick(x, y)
+    # pyautogui.click(x=x, y=y)
 
 def rightclick_event(x, y):
     pyautogui.rightClick(x, y)
@@ -141,11 +143,11 @@ def drag_event(drag_flag):
         no_dup_drag = True
 
 def screenshot_event():
+    current_time = datetime.now().strftime('%Y%m%d_%H%M%S')
     img_print = pyautogui.press('printscreen') #printscreen key 누름
     img_print = ImageGrab.grab(img_print)
-    img_print.save('./screenshot_img/screenshot.png')
-    img_print.show()
-    print(type(img_print))
+    img_print.save(f'./screenshot_img/screenshot_{current_time}.png')
+    # img_print.show()
     return True
 
 def scroll_event(vector):
