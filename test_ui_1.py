@@ -4,7 +4,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from threading import Thread
 import prj_function_directory as pfd
 import handmouse, subprocess
-import cv2
+import cv2, hand_painter
 import os
 import pyautogui
 import sys
@@ -66,6 +66,7 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
 
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
+        self.pushButton_2.clicked.connect(self.start_paint)
         self.pushButton_3.clicked.connect(self.link_keyboard)
         self.pushButton_4.clicked.connect(self.closeEvent)
 
@@ -158,6 +159,14 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
         self.pushButton_4.setFlat(True)
         self.pushButton_4.setObjectName(name)
 
+    def start_paint(self):
+        # th_painter = Thread(target=hand_painter.main, args=(param=event_val,), name='hand_painter')
+        # th_painter.daemon = True
+        # th_painter.start()
+        th_call_painter = Thread(target=thread_call_painter, name='th_call_painter')
+        th_call_painter.daemon = True
+        th_call_painter.start()
+
     def link_keyboard(self):
         print('input keyboard')
         subprocess.Popen('C:\WINDOWS\system32\osk.exe')
@@ -188,7 +197,7 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
 
 
 def thread_cam():
-    global execute_flag, execute_parameter, draw_point, clocX, clocY, plocX, plocY, execute_flag
+    global execute_flag, execute_parameter, draw_point, clocX, clocY, plocX, plocY, execute_flag, event_val
     # 미디어파이프 라이브러리에서 제공하는 함수를 사용하기 위한 객체를 생성합니다.
     import mediapipe as mp
     mp_hands = mp.solutions.hands
@@ -284,6 +293,12 @@ def thread_cam():
 plocX, plocY = clocX, clocY
 
 
+def thread_call_painter():
+    while True:
+        hand_painter.main(param=event_val)
+        time.sleep(0.05)
+
+
 def thread_execute_event():
     global execute_flag, plocX, plocY, clocX, clocY, run_flag
     scroll_asset = {'previous': -1, 'current': -1}
@@ -310,13 +325,11 @@ def thread_execute_event():
                     pfd.leftclick_event(clocX, clocY)
                 elif event == 'doubleclick':
                     pfd.doubleclick_event(clocX, clocY)
-                    print(event, 'doubleclick!')
                 elif event == 'drag':
                     pfd.drag_event(drag_flag=True)
-                    print(event, 'drag!')
+                    # pfd.move_event(clocX, clocY)
                 elif event == 'rightclick':
                     pfd.rightclick_event(clocX, clocY)
-                    print(event, 'rightclick!')
                 elif event == 'screenshot':
                     ui.widget_controller(show=False)
                     time.sleep(0.5)
@@ -346,6 +359,7 @@ if __name__ == "__main__":
     os.makedirs('./screenshot_img', exist_ok=True)
 
     # th_execute_event 에서 사용할 플래그 변수, 파라미터를 선언합니다.
+    event_val = 'default'
     execute_flag = False
     run_flag = False
     execute_parameter = []
