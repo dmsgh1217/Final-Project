@@ -51,10 +51,10 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
         # self.btn_set('img/1_mouse_btn_img', [int(screen_width / 2) + 740, int(screen_height / 2), 80, 80], 'pushButton')
 
 
-        self.label = QtWidgets.QLabel(self.centralwidget)
-        self.label.setGeometry(QtCore.QRect(mainframe_info['start_x'], mainframe_info['start_y'], mainframe_info['end_x'], mainframe_info['end_y']))
-        self.label.setPixmap(QtGui.QPixmap("img/grad_contour_for_control_region.png"))
-        self.label.setObjectName("label")
+        # self.label = QtWidgets.QLabel(self.centralwidget)
+        # self.label.setGeometry(QtCore.QRect(mainframe_info['start_x'], mainframe_info['start_y'], mainframe_info['end_x'], mainframe_info['end_y']))
+        # self.label.setPixmap(QtGui.QPixmap("img/grad_contour_for_control_region.png"))
+        # self.label.setObjectName("label")
         self.status_label = QtWidgets.QLabel(self.centralwidget)
         self.status_label.setGeometry(screen_width - 120, screen_height - 120, 64, 64)
         self.status_label.setPixmap(QtGui.QPixmap('./img/red.png'))
@@ -295,7 +295,7 @@ plocX, plocY = clocX, clocY
 
 def thread_call_painter():
     while True:
-        hand_painter.main(param=event_val)
+        hand_painter.main(event_val)
         time.sleep(0.05)
 
 
@@ -327,7 +327,7 @@ def thread_execute_event():
                     pfd.doubleclick_event(clocX, clocY)
                 elif event == 'drag':
                     pfd.drag_event(drag_flag=True)
-                    # pfd.move_event(clocX, clocY)
+                    pfd.move_event(clocX, clocY)
                 elif event == 'rightclick':
                     pfd.rightclick_event(clocX, clocY)
                 elif event == 'screenshot':
