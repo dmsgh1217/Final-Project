@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 from sklearn.utils import shuffle
 from PIL import ImageGrab, Image
-import pyautogui
+import pyautogui, autopy
 # from gui_app import GUI
 
 
@@ -119,10 +119,11 @@ def split_evenly_df(path='./rawdata', name='integration', ref=False):
 #이하 마우스 이벤트에 대한 function 함수
 
 def move_event(x, y):
-    pyautogui.moveTo(x, y)
+    # pyautogui.moveTo(x, y)
+    autopy.mouse.move(x, y)
 
 def leftclick_event(x, y):
-    pyautogui.leftClick(x, y)
+    pyautogui.click(x=x, y=y)
     # pyautogui.click(x=x, y=y)
 
 def rightclick_event(x, y):
