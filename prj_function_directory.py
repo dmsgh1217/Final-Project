@@ -152,7 +152,6 @@ def screenshot_event():
     return True
 
 def scroll_event(vector):
-    print(vector)
     if vector <= -10: # 이동된 y 좌표가 -10 이하일때
         pyautogui.scroll(-80)  # 스크롤 다운
     elif vector >= 10:  # 이동된 y좌표가 10 이상일때
