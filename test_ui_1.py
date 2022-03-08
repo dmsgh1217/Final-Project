@@ -11,7 +11,7 @@ from datetime import datetime
 draw_point = (0, 0) #중심좌표(momentum) draw point
 cam_width, cam_height = 1280, 720
 margin = 175
-smoothening = 7
+smoothening = 5
 plocX, plocY = 0, 0
 clocX, clocY = 0, 0
 
