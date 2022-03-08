@@ -1,12 +1,14 @@
 import time
 import numpy as np
 from PyQt5 import QtCore, QtGui, QtWidgets
+from threading import Thread
 import prj_function_directory as pfd
 import handmouse, subprocess
 import cv2
+import os
+import pyautogui
+import sys
 
-from PIL import ImageGrab
-from datetime import datetime
 
 draw_point = (0, 0) #중심좌표(momentum) draw point
 cam_width, cam_height = 1280, 720
@@ -21,13 +23,18 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
         self.on_top = on_top
         self.MainWindow = MainWindow
         self.localPos = None
+        self.status_label = None
         self.setupUi(self.MainWindow)
         # self.keyboard_trigger = False
 
 
     def setupUi(self, MainWindow):
+        mainframe_info = {'start_x': int(screen_width / 2) - 640, 'start_y': int(screen_height / 2) - 420,
+                          'end_x': int(screen_width / 2) + 640, 'end_y': int(screen_height / 2) + 300}
+
         self.MainWindow.setObjectName("MainWindow")
-        self.MainWindow.resize(1495, 782)
+        self.MainWindow.resize(screen_width, screen_height)
+        self.MainWindow.move(0, 0)
         self.centralwidget = QtWidgets.QWidget(MainWindow)
 
         flags = QtCore.Qt.WindowFlags(QtCore.Qt.Tool | QtCore.Qt.FramelessWindowHint | QtCore.Qt.WindowStaysOnTopHint
@@ -41,15 +48,20 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
         self.MainWindow.setAttribute(QtCore.Qt.WA_TranslucentBackground, True)
 
         self.centralwidget.setObjectName("centralwidget")
-        self.btn_set_2('img/2_painter_btn_img', [1360, 380, 100, 100], 'pushButton_2')
-        self.btn_set_4('img/4_exit_btn_img', [1360, 640, 100, 100], 'pushButton_4')
-        self.btn_set('img/1_mouse_btn_img', [1360, 250, 100, 100], 'pushButton')
-        self.btn_set_3('img/3_keyboard_btn_img', [1360, 510, 100, 100], 'pushButton_3')
+        # self.btn_set('img/1_mouse_btn_img', [int(screen_width / 2) + 740, int(screen_height / 2), 80, 80], 'pushButton')
+
 
         self.label = QtWidgets.QLabel(self.centralwidget)
-        self.label.setGeometry(QtCore.QRect(50, 40, 1291, 721))
+        self.label.setGeometry(QtCore.QRect(mainframe_info['start_x'], mainframe_info['start_y'], mainframe_info['end_x'], mainframe_info['end_y']))
         self.label.setPixmap(QtGui.QPixmap("img/grad_contour_for_control_region.png"))
         self.label.setObjectName("label")
+        self.status_label = QtWidgets.QLabel(self.centralwidget)
+        self.status_label.setGeometry(screen_width - 120, screen_height - 120, 64, 64)
+        self.status_label.setPixmap(QtGui.QPixmap('./img/red.png'))
+        self.btn_set('img/1_mouse_btn_img', [int(screen_width / 2) + 690, int(screen_height / 2) - 110, 80, 80], 'pushButton')
+        self.btn_set_2('img/2_painter_btn_img', [int(screen_width / 2) + 690, int(screen_height / 2) + 10, 80, 80], 'pushButton_2')
+        self.btn_set_3('img/3_keyboard_btn_img', [int(screen_width / 2) + 690, int(screen_height / 2) + 130, 80, 80], 'pushButton_3')
+        self.btn_set_4('img/4_exit_btn_img', [int(screen_width / 2) + 690, int(screen_height / 2) + 250, 80, 80], 'pushButton_4')
         self.MainWindow.setCentralWidget(self.centralwidget)
 
         self.retranslateUi(MainWindow)
@@ -60,6 +72,7 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
     def btn_set(self, path, xy, name):
         self.pushButton = QtWidgets.QPushButton(self.centralwidget)
         self.pushButton.setGeometry(QtCore.QRect(xy[0], xy[1], xy[2], xy[3]))
+        # self.pushButton.setGeometry(int(screen_width / 2) + 740, int(screen_height / 2), 80, 80)
         self.pushButton.setFocusPolicy(QtCore.Qt.NoFocus)
         self.pushButton.setStyleSheet("QPushButton{\n"
                                       "border:0px;\n"
@@ -159,22 +172,19 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
         _translate = QtCore.QCoreApplication.translate
         self.MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
 
-    def btn_controller(self, btn_status):
-        if btn_status:
-            # self.pushButton.show()
-            # self.pushButton_2.show()
-            # self.pushButton_3.show()
-            # self.pushButton_4.show()
-            # self.label.show()
+    def widget_controller(self, show):
+        if show:
             self.MainWindow.show()
         else:
-            # self.pushButton.hide()
-            # self.pushButton_2.hide()
-            # self.pushButton_3.hide()
-            # self.pushButton_4.hide()
-            # self.label.hide()
             self.MainWindow.hide()
-        print(self.pushButton.isVisible(), self.pushButton_2.isVisible(), self.pushButton_3.isVisible(), self.pushButton_4.isVisible(), self.label.isVisible())
+
+    def show_status(self, val):
+        if val == 2:
+            self.status_label.setPixmap(QtGui.QPixmap('./img/green.png'))
+        elif val == 1:
+            self.status_label.setPixmap(QtGui.QPixmap('./img/yellow.png'))
+        else:
+            self.status_label.setPixmap(QtGui.QPixmap('./img/red.png'))
 
 
 def thread_cam():
@@ -182,7 +192,7 @@ def thread_cam():
     # 미디어파이프 라이브러리에서 제공하는 함수를 사용하기 위한 객체를 생성합니다.
     import mediapipe as mp
     mp_hands = mp.solutions.hands
-    mp_drawing = mp.solutions.drawing_utils
+    # mp_drawing = mp.solutions.drawing_utils
     hands = mp_hands.Hands(max_num_hands=1, min_detection_confidence=0.5, min_tracking_confidence=0.5)
 
     # 플래그 값을 초기화 합니다.
@@ -234,6 +244,7 @@ def thread_cam():
                     # 비정상적인 랜드마크 좌표값이 확인되었을 경우에는 이후 프로세스를 진행하지 않고 다음 프레임(frame)을 분석합니다.
                     if none_flag:
                         event_val = 'default'
+                        ui.show_status(val=0)
                         break
                 if not none_flag:
                     """
@@ -242,6 +253,10 @@ def thread_cam():
                     """
                     if not run_flag:
                         momentum, event_val, switch = handmouse.calculate_loc_info(landmarks=segment)
+                        if switch:
+                            ui.show_status(val=1)
+                        else:
+                            ui.show_status(val=2)
                         print(f'event_val({switch}): {event_val}')
                         execute_parameter = [momentum, event_val, screen_width, screen_height]
                         execute_flag = True
@@ -271,6 +286,7 @@ plocX, plocY = clocX, clocY
 
 def thread_execute_event():
     global execute_flag, plocX, plocY, clocX, clocY, run_flag
+    scroll_asset = {'previous': -1, 'current': -1}
     while True:
         if execute_flag:
             execute_flag = False
@@ -281,6 +297,7 @@ def thread_execute_event():
             win_xy = [execute_parameter[2], execute_parameter[3]]
             cam_xy = [cam_width, cam_height]
             loc_x, loc_y = pfd.convert_loc(xy, win_xy, cam_xy, margin)
+            scroll_asset['current'] = loc_y
 
             clocX = plocX + (loc_x - plocX) / smoothening
             clocY = plocY + (loc_y - plocY) / smoothening
@@ -301,14 +318,16 @@ def thread_execute_event():
                     pfd.rightclick_event(clocX, clocY)
                     print(event, 'rightclick!')
                 elif event == 'screenshot':
-                    ui.btn_controller(btn_status=False)
+                    ui.widget_controller(show=False)
                     time.sleep(0.5)
                     pfd.screenshot_event()
                     time.sleep(0.5)
-                    ui.btn_controller(btn_status=True)
+                    ui.widget_controller(show=True)
                 elif event == 'scroll':
-                    pfd.scroll_event(clocX, clocY)
-                    print(event, 'scroll!')
+                    if not scroll_asset['previous'] == -1:
+                        scroll_vector = (scroll_asset['current'] - scroll_asset['previous']) / 5
+                        pfd.scroll_event(vector=scroll_vector)
+                    scroll_asset['previous'] = scroll_asset['current']
                 else:
                     pass
             except Exception as E:
@@ -320,28 +339,11 @@ def thread_execute_event():
 
 
 if __name__ == "__main__":
-    import sys
-    app = QtWidgets.QApplication(sys.argv)
-    MainWindow = QtWidgets.QMainWindow()
-    ui = Ui_MainWindow(MainWindow)
-    ui.setupUi(MainWindow)
-    MainWindow.show()
-
-    ####################################################################################################################
-    # 백엔드 모듈을 가져옵니다.
+    screen_width, screen_height = pyautogui.size()
     handmouse.initialize()
 
     # 스크린샷을 저장할 디렉토리를 생성합니다. (이미 있는경우 무시합니다.)
-    import os
     os.makedirs('./screenshot_img', exist_ok=True)
-
-    import pyautogui
-    global screen_width, screen_height
-    screen_width, screen_height = pyautogui.size()
-
-    # 외부입력 카메라를 사용하기 위한 멀티스레드를 실행합니다.
-    from threading import Thread
-    global switch
 
     # th_execute_event 에서 사용할 플래그 변수, 파라미터를 선언합니다.
     execute_flag = False
@@ -354,7 +356,10 @@ if __name__ == "__main__":
     th_execute_event = Thread(target=thread_execute_event, name='th_execute_event')
     th_execute_event.daemon = True
     th_execute_event.start()
-    print(pyautogui.size())
-    ####################################################################################################################
-    sys.exit(app.exec_())
 
+    app = QtWidgets.QApplication(sys.argv)
+    MainWindow = QtWidgets.QMainWindow()
+    ui = Ui_MainWindow(MainWindow)
+    ui.setupUi(MainWindow)
+    MainWindow.show()
+    sys.exit(app.exec_())
