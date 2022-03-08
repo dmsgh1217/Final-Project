@@ -2,7 +2,7 @@ import time
 import numpy as np
 from PyQt5 import QtCore, QtGui, QtWidgets
 import prj_function_directory as pfd
-import handmouse
+import handmouse, subprocess
 import cv2
 
 from PIL import ImageGrab
@@ -11,17 +11,18 @@ from datetime import datetime
 draw_point = (0, 0) #중심좌표(momentum) draw point
 cam_width, cam_height = 1280, 720
 margin = 175
-smoothening = 5
+smoothening = 7
 plocX, plocY = 0, 0
 clocX, clocY = 0, 0
 
 class Ui_MainWindow(QtWidgets.QMainWindow):
-    def __init__(self, Mainwindow, on_top=True):
+    def __init__(self, MainWindow, on_top=True):
         super(Ui_MainWindow, self).__init__()
         self.on_top = on_top
         self.MainWindow = MainWindow
         self.localPos = None
         self.setupUi(self.MainWindow)
+        # self.keyboard_trigger = False
 
 
     def setupUi(self, MainWindow):
@@ -41,9 +42,9 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
 
         self.centralwidget.setObjectName("centralwidget")
         self.btn_set_2('img/2_painter_btn_img', [1360, 380, 100, 100], 'pushButton_2')
-        self.btn_set_3('img/4_exit_btn_img', [1360, 640, 100, 100], 'pushButton_4')
+        self.btn_set_4('img/4_exit_btn_img', [1360, 640, 100, 100], 'pushButton_4')
         self.btn_set('img/1_mouse_btn_img', [1360, 250, 100, 100], 'pushButton')
-        self.btn_set_4('img/3_keyboard_btn_img', [1360, 510, 100, 100], 'pushButton_3')
+        self.btn_set_3('img/3_keyboard_btn_img', [1360, 510, 100, 100], 'pushButton_3')
 
         self.label = QtWidgets.QLabel(self.centralwidget)
         self.label.setGeometry(QtCore.QRect(50, 40, 1291, 721))
@@ -53,6 +54,8 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
 
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
+        self.pushButton_3.clicked.connect(self.link_keyboard)
+        self.pushButton_4.clicked.connect(self.closeEvent)
 
     def btn_set(self, path, xy, name):
         self.pushButton = QtWidgets.QPushButton(self.centralwidget)
@@ -141,6 +144,16 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
         self.pushButton_4.setText("")
         self.pushButton_4.setFlat(True)
         self.pushButton_4.setObjectName(name)
+
+    def link_keyboard(self):
+        print('input keyboard')
+        subprocess.Popen('C:\WINDOWS\system32\osk.exe')
+
+    def activate_mouse(self):
+        print('mouse activate')
+
+    def closeEvent(self, QCloseEvent):
+        QCloseEvent.accept()
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
@@ -243,9 +256,6 @@ def thread_cam():
 
         cv2.rectangle(frame, (margin, margin), (cam_width - margin, cam_height - margin), (255, 0, 255), 2)
 
-        clocX = plocX + (draw_point[0] - plocX) / smoothening
-        clocY = plocY + (draw_point[1] - plocY) / smoothening
-
         cv2.imshow('frame', frame)
         cv2.moveWindow(winname='frame', x=int((screen_width / 2) - (cam_width / 2)), y=int((screen_height / 2) - (cam_height / 2)))
 
@@ -272,20 +282,23 @@ def thread_execute_event():
             cam_xy = [cam_width, cam_height]
             loc_x, loc_y = pfd.convert_loc(xy, win_xy, cam_xy, margin)
 
+            clocX = plocX + (loc_x - plocX) / smoothening
+            clocY = plocY + (loc_y - plocY) / smoothening
+
             try:
                 if event == 'move' or event == 'default':
-                    pfd.move_event(loc_x, loc_y)
+                    pfd.move_event(clocX, clocY)
                     pfd.drag_event(drag_flag=False)
                 elif event == 'leftclick':
-                    pfd.leftclick_event(loc_x, loc_y)
+                    pfd.leftclick_event(clocX, clocY)
                 elif event == 'doubleclick':
-                    pfd.doubleclick_event(loc_x, loc_y)
+                    pfd.doubleclick_event(clocX, clocY)
                     print(event, 'doubleclick!')
                 elif event == 'drag':
                     pfd.drag_event(drag_flag=True)
                     print(event, 'drag!')
                 elif event == 'rightclick':
-                    pfd.rightclick_event(loc_x, loc_y)
+                    pfd.rightclick_event(clocX, clocY)
                     print(event, 'rightclick!')
                 elif event == 'screenshot':
                     ui.btn_controller(btn_status=False)
@@ -294,7 +307,7 @@ def thread_execute_event():
                     time.sleep(0.5)
                     ui.btn_controller(btn_status=True)
                 elif event == 'scroll':
-                    pfd.scroll_event(clocY - plocY)
+                    pfd.scroll_event(clocX, clocY)
                     print(event, 'scroll!')
                 else:
                     pass
