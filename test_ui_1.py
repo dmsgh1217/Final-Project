@@ -265,7 +265,7 @@ def thread_cam():
                         break
                 if not none_flag:
                     """
-                    momentum:       0번, 5번, 17번 랜드마크의 무게 중심 좌표값을 획득합니다.
+                    momentum:    0번, 5번, 17번 랜드마크의 무게 중심 좌표값을 획득합니다.
                     event_val:
                     """
                     if not run_flag:
@@ -280,7 +280,8 @@ def thread_cam():
 
                     # tf_result = icon_in(momentum[0], momentum[1], 1630, 370)
                     # icon_control(tf_result, event_val)
-
+        else:
+            ui.show_status(val=0)
         # 설정된 영상을 출력합니다. (Setup)
         if flag['momentum']:
             draw_point = tuple([int(momentum[0] * cam_width), int(momentum[1] * cam_height)])

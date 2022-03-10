@@ -152,9 +152,9 @@ def screenshot_event():
     return True
 
 def scroll_event(vector):
-    if vector <= -10: # 이동된 y 좌표가 -10 이하일때
+    if vector <= -7: # 이동된 y 좌표가 -10 이하일때
         pyautogui.scroll(-80)  # 스크롤 다운
-    elif vector >= 10:  # 이동된 y좌표가 10 이상일때
+    elif vector >= 7:  # 이동된 y좌표가 10 이상일때
         pyautogui.scroll(80)  # 스크롤 업
 
 # 캠 좌표 및 캠 내 마우스 조작 영역 좌표를 윈도우 좌표에 맞게 재설정한다.
