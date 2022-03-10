@@ -1,3 +1,6 @@
+# Release 1.5 by Min-chul
+# 일시정지(Pause) 이벤트 리턴 후 연속적으로 일정시간(1초) 동안 Pause 동작을 리턴하지 못하도록 Block 기능 추가
+
 # Release 1.4 by Min-chul
 # 스크린샷(Screenshot) 이벤트 처리시 중간에 다른 동작이 간섭하였을 때 "screenshot"으로 결과가 나오는 문제점 해결
 # 상기 문제 해결은 "Pause" 동작 해결과 동일 방법(call_count 계산)으로 해결하였음.
@@ -286,6 +289,8 @@ def _thread_pause():
                     if call_count >= 10:
                         event_asset['switch'] = True
             call_count = 0
+            # 동작이 완료된 후 일정 시간(1초) 동안 연속적인 Pause 동작을 할 수 없도록 Block 합니다.
+            time.sleep(1)
             # 스레드 내부 실행이 종료되었으므로, 부분 동작 처리를 활성화 할 수 있도록 flag_asset['pause_trigger']를 "False"로 변경합니다.
             flag_asset['pause_trigger'] = False
             # 스레드 내부 실행이 종료되었으므로, flag_asset['pause_run'] 변수를 "False"로 변경하여 비활성화 상태임을 명시합니다.
