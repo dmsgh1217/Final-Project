@@ -30,6 +30,9 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
 
 
     def setupUi(self, MainWindow):
+        mainframe_info = {'start_x': int(screen_width / 2) - 640, 'start_y': int(screen_height / 2) - 420,
+                          'end_x': int(screen_width / 2) + 640, 'end_y': int(screen_height / 2) + 300}
+
         self.MainWindow.setObjectName("MainWindow")
         self.MainWindow.resize(screen_width, screen_height)
         self.MainWindow.move(0, 0)
