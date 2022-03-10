@@ -24,14 +24,12 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
         self.MainWindow = MainWindow
         self.localPos = None
         self.status_label = None
+        self.msg_label = None
         self.setupUi(self.MainWindow)
         # self.keyboard_trigger = False
 
 
     def setupUi(self, MainWindow):
-        mainframe_info = {'start_x': int(screen_width / 2) - 640, 'start_y': int(screen_height / 2) - 420,
-                          'end_x': int(screen_width / 2) + 640, 'end_y': int(screen_height / 2) + 300}
-
         self.MainWindow.setObjectName("MainWindow")
         self.MainWindow.resize(screen_width, screen_height)
         self.MainWindow.move(0, 0)
@@ -58,6 +56,11 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
         self.status_label = QtWidgets.QLabel(self.centralwidget)
         self.status_label.setGeometry(screen_width - 120, screen_height - 120, 64, 64)
         self.status_label.setPixmap(QtGui.QPixmap('./img/red.png'))
+
+        #우측 상단 상태 메시지 라벨
+        self.msg_label = QtWidgets.QLabel(self.centralwidget)
+        self.msg_label.setGeometry(1520, 150, 400, 100)
+
         self.btn_set('img/1_mouse_btn_img', [int(screen_width / 2) + 690, int(screen_height / 2) - 110, 80, 80], 'pushButton')
         self.btn_set_2('img/2_painter_btn_img', [int(screen_width / 2) + 690, int(screen_height / 2) + 10, 80, 80], 'pushButton_2')
         self.btn_set_3('img/3_keyboard_btn_img', [int(screen_width / 2) + 690, int(screen_height / 2) + 130, 80, 80], 'pushButton_3')
@@ -73,7 +76,6 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
     def btn_set(self, path, xy, name):
         self.pushButton = QtWidgets.QPushButton(self.centralwidget)
         self.pushButton.setGeometry(QtCore.QRect(xy[0], xy[1], xy[2], xy[3]))
-        # self.pushButton.setGeometry(int(screen_width / 2) + 740, int(screen_height / 2), 80, 80)
         self.pushButton.setFocusPolicy(QtCore.Qt.NoFocus)
         self.pushButton.setStyleSheet("QPushButton{\n"
                                       "border:0px;\n"
@@ -160,9 +162,6 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
         self.pushButton_4.setObjectName(name)
 
     def start_paint(self):
-        # th_painter = Thread(target=hand_painter.main, args=(param=event_val,), name='hand_painter')
-        # th_painter.daemon = True
-        # th_painter.start()
         th_call_painter = Thread(target=thread_call_painter, name='th_call_painter')
         th_call_painter.daemon = True
         th_call_painter.start()
@@ -188,11 +187,17 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
             self.MainWindow.hide()
 
     def show_status(self, val):
-        if val == 2:
+        print(f'val: {val}')
+        if val == 3:
+            self.msg_label.setPixmap(QtGui.QPixmap('./img/msg_screenshot.png'))
+        elif val == 2:
+            self.msg_label.setPixmap(QtGui.QPixmap('./img/msg_range_in.png'))
             self.status_label.setPixmap(QtGui.QPixmap('./img/green.png'))
         elif val == 1:
+            self.msg_label.setPixmap(QtGui.QPixmap('./img/msg_pause_active.png'))
             self.status_label.setPixmap(QtGui.QPixmap('./img/yellow.png'))
         else:
+            self.msg_label.setPixmap(QtGui.QPixmap('./img/msg_range_out.png'))
             self.status_label.setPixmap(QtGui.QPixmap('./img/red.png'))
 
 
@@ -334,6 +339,7 @@ def thread_execute_event():
                     ui.widget_controller(show=False)
                     time.sleep(0.5)
                     pfd.screenshot_event()
+                    ui.show_status(val=3)
                     time.sleep(0.5)
                     ui.widget_controller(show=True)
                 elif event == 'scroll':
