@@ -31,6 +31,7 @@ def on_hand(event, x, y, flags, param):
     global oldx, oldy
 
     clocX, clocY = x, y
+    print(pen_toggle)
     if virtual_event == 'leftclick':
         oldx, oldy = clocX, clocY
     elif virtual_event == 'drag':

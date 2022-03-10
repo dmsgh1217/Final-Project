@@ -303,7 +303,7 @@ def calculate_loc_info(landmarks):
     global check_duplicate_queue, flag_asset, call_count
     call_count += 1
     # 결과 값(return)을 전달할 때 중복되어 전달되면 안되는 카테고리를 정의합니다.
-    duplicate_list = ['leftclick', 'doubleclick', 'screenshot', 'rightclick']
+    duplicate_list = ['leftclick', 'doubleclick', 'screenshot', 'rightclick', 'drag']
 
     # 42차원의 좌표 데이터를 각도 변환 함수(convert_angle())의 입력에 사용할 수 있도록 딕셔너리(location)로 재구성합니다.
     location = {'x': [], 'y': []}
